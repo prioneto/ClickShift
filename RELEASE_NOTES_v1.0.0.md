@@ -30,7 +30,7 @@ The first public release of ClickShift: a small, free macOS menu-bar bridge betw
 
 ## macOS security notice
 
-This free build is ad-hoc signed but not Apple-notarized. On first launch, macOS may require you to try opening the app and then choose **Open Anyway** under **System Settings → Privacy & Security**. Only do this for a build downloaded from this repository. The complete source and build script are available for inspection.
+This free build is ad-hoc signed but not Apple-notarized. On first launch, macOS may require you to try opening the app and then choose **Open Anyway** under **System Settings → Privacy & Security**. Only do this for a build downloaded from this repository. The complete source and build script are available for inspection. See [Apple's security guidance](https://support.apple.com/102445) for details.
 
 ## Known limitations
 

@@ -27,7 +27,7 @@ The downloadable app is universal and contains native `arm64` and `x86_64` execu
 
 ## Download and install
 
-1. Download `ClickShift-v1.0.0-macOS-universal.zip` from the latest GitHub release.
+1. Download `ClickShift-v1.0.0-macOS-universal.zip` from the [latest GitHub release](https://github.com/prioneto/ClickShift/releases/latest).
 2. Unzip it and move `ClickShift.app` to `/Applications`.
 3. Open ClickShift once. It appears as a small shift icon in the menu bar.
 4. Approve Bluetooth access when macOS asks.
@@ -45,7 +45,7 @@ If that happens:
 3. Scroll to **Security** and choose **Open Anyway** for ClickShift.
 4. Confirm **Open**.
 
-Only bypass this warning for a build you obtained from this repository. You can also build the app from source instead.
+Only bypass this warning for a build you obtained from this repository. You can also build the app from source instead. See [Apple's guidance for opening an app from an unidentified developer](https://support.apple.com/102445) for more information.
 
 ## Using ClickShift
 
@@ -111,7 +111,7 @@ ClickShift itself must already be running. Enable **Run at login for MyWhoosh de
 
 ### A Click firmware update breaks input
 
-The Click protocol is unofficial and reverse-engineered, so future firmware may change it. Open a GitHub issue with your Click firmware version and what ClickShift reports.
+The Click protocol is unofficial and reverse-engineered, so future firmware may change it. [Open a GitHub issue](https://github.com/prioneto/ClickShift/issues) with your Click firmware version and what ClickShift reports.
 
 ## Build from source
 
