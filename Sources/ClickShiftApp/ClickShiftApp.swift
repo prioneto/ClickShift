@@ -10,7 +10,15 @@ struct ClickShiftApp: App {
         MenuBarExtra {
             menuContent
         } label: {
-            Image(systemName: controller.state.isConnected ? "bicycle.circle.fill" : "bicycle.circle")
+            if let icon = AppAssets.image(
+                named: "MenuBarIcon",
+                template: true,
+                size: NSSize(width: 18, height: 18)
+            ) {
+                Image(nsImage: icon)
+            } else {
+                Image(systemName: controller.state.isConnected ? "bicycle.circle.fill" : "bicycle.circle")
+            }
         }
         .menuBarExtraStyle(.window)
     }
@@ -18,15 +26,27 @@ struct ClickShiftApp: App {
     private var menuContent: some View {
         VStack(alignment: .leading, spacing: 12) {
             HStack(spacing: 8) {
-                Circle()
-                    .fill(controller.state.isConnected ? Color.green : Color.orange)
-                    .frame(width: 9, height: 9)
+                if let icon = AppAssets.image(named: "AppIcon") {
+                    Image(nsImage: icon)
+                        .resizable()
+                        .scaledToFit()
+                        .frame(width: 38, height: 38)
+                } else {
+                    Image(systemName: "gearshape.2.fill")
+                        .font(.title2)
+                        .frame(width: 38, height: 38)
+                }
                 VStack(alignment: .leading, spacing: 2) {
                     Text("ClickShift")
                         .font(.headline)
-                    Text(controller.state.label)
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
+                    HStack(spacing: 5) {
+                        Circle()
+                            .fill(controller.state.isConnected ? Color.green : Color.orange)
+                            .frame(width: 7, height: 7)
+                        Text(controller.state.label)
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                    }
                 }
             }
 

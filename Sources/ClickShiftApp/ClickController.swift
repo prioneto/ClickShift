@@ -67,7 +67,6 @@ final class ClickController: NSObject, ObservableObject {
     override init() {
         super.init()
         accessibilityGranted = keyboard.isAccessibilityGranted
-        _ = central
         startWatchingMyWhoosh()
     }
 
@@ -170,7 +169,7 @@ final class ClickController: NSObject, ObservableObject {
         state = .scanning
         central.scanForPeripherals(
             withServices: nil,
-            options: [CBCentralManagerScanOptionAllowDuplicatesKey: true]
+            options: [CBCentralManagerScanOptionAllowDuplicatesKey: false]
         )
     }
 

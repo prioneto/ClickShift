@@ -7,6 +7,7 @@ ClickShift is a small, free macOS menu-bar utility for using the **right Zwift C
 - reconnects automatically whenever the controller wakes or returns in range
 - runs quietly at login, begins connecting when MyWhoosh opens, and disconnects when MyWhoosh quits
 - uses the right controller only, so it does not need the left controller's periodic Zwift unlock
+- includes a native Finder/Dock icon and a compact monochrome menu-bar icon
 
 ClickShift is an unofficial personal utility and is not affiliated with Zwift or MyWhoosh.
 
@@ -18,7 +19,7 @@ Requirements: macOS 13 or later and Xcode Command Line Tools.
 ./scripts/build-app.sh
 ```
 
-The packaged app is written to `../outputs/ClickShift.app` by default.
+The packaged app is written to `dist/ClickShift.app` by default.
 
 Run tests with:
 
@@ -37,6 +38,10 @@ swift test
 7. Enable Virtual Shifting in MyWhoosh and start a ride.
 
 ClickShift registers itself as a macOS login item the first time it runs. While MyWhoosh is closed it remains idle and does not scan for Bluetooth devices. When MyWhoosh opens, ClickShift starts scanning; if the controller sleeps or disconnects, press a right-side button to wake it and it will reconnect automatically.
+
+## Battery use
+
+While MyWhoosh is closed, ClickShift only listens for macOS application launch/quit notifications: it does not initialize or scan Bluetooth. While MyWhoosh is open, it scans only until the right Click connects. Once connected, it sends one three-byte keepalive every five seconds and otherwise waits for button notifications. This background work is tiny compared with running MyWhoosh itself.
 
 ## Why the right controller?
 

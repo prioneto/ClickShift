@@ -8,14 +8,30 @@ OUTPUT_DIR=${1:-${PROJECT_DIR}/dist}
 APP_DIR=${OUTPUT_DIR}/ClickShift.app
 CONTENTS_DIR=${APP_DIR}/Contents
 MACOS_DIR=${CONTENTS_DIR}/MacOS
+RESOURCES_DIR=${CONTENTS_DIR}/Resources
+ICONSET_DIR=${PROJECT_DIR}/.build/AppIcon.iconset
 
 cd "${PROJECT_DIR}"
 swift build -c release
 
-mkdir -p "${MACOS_DIR}"
+mkdir -p "${MACOS_DIR}" "${RESOURCES_DIR}" "${ICONSET_DIR}"
 cp ".build/release/ClickShift" "${MACOS_DIR}/ClickShift"
 cp "LICENSE" "${CONTENTS_DIR}/LICENSE.txt"
 cp "THIRD_PARTY_NOTICES.md" "${CONTENTS_DIR}/THIRD_PARTY_NOTICES.md"
+cp "Resources/AppIcon.png" "${RESOURCES_DIR}/AppIcon.png"
+sips -z 36 36 "Resources/MenuBarIcon.png" --out "${RESOURCES_DIR}/MenuBarIcon.png" >/dev/null
+
+sips -z 16 16 "Resources/AppIcon.png" --out "${ICONSET_DIR}/icon_16x16.png" >/dev/null
+sips -z 32 32 "Resources/AppIcon.png" --out "${ICONSET_DIR}/icon_16x16@2x.png" >/dev/null
+sips -z 32 32 "Resources/AppIcon.png" --out "${ICONSET_DIR}/icon_32x32.png" >/dev/null
+sips -z 64 64 "Resources/AppIcon.png" --out "${ICONSET_DIR}/icon_32x32@2x.png" >/dev/null
+sips -z 128 128 "Resources/AppIcon.png" --out "${ICONSET_DIR}/icon_128x128.png" >/dev/null
+sips -z 256 256 "Resources/AppIcon.png" --out "${ICONSET_DIR}/icon_128x128@2x.png" >/dev/null
+sips -z 256 256 "Resources/AppIcon.png" --out "${ICONSET_DIR}/icon_256x256.png" >/dev/null
+sips -z 512 512 "Resources/AppIcon.png" --out "${ICONSET_DIR}/icon_256x256@2x.png" >/dev/null
+sips -z 512 512 "Resources/AppIcon.png" --out "${ICONSET_DIR}/icon_512x512.png" >/dev/null
+sips -z 1024 1024 "Resources/AppIcon.png" --out "${ICONSET_DIR}/icon_512x512@2x.png" >/dev/null
+iconutil -c icns "${ICONSET_DIR}" -o "${RESOURCES_DIR}/AppIcon.icns"
 
 PLIST_PATH=${CONTENTS_DIR}/Info.plist
 rm -f "${PLIST_PATH}"
@@ -23,6 +39,7 @@ rm -f "${PLIST_PATH}"
 /usr/libexec/PlistBuddy -c "Add :CFBundleExecutable string ClickShift" "${PLIST_PATH}"
 /usr/libexec/PlistBuddy -c "Add :CFBundleIdentifier string app.clickshift.mac" "${PLIST_PATH}"
 /usr/libexec/PlistBuddy -c "Add :CFBundleInfoDictionaryVersion string 6.0" "${PLIST_PATH}"
+/usr/libexec/PlistBuddy -c "Add :CFBundleIconFile string AppIcon" "${PLIST_PATH}"
 /usr/libexec/PlistBuddy -c "Add :CFBundleName string ClickShift" "${PLIST_PATH}"
 /usr/libexec/PlistBuddy -c "Add :CFBundlePackageType string APPL" "${PLIST_PATH}"
 /usr/libexec/PlistBuddy -c "Add :CFBundleShortVersionString string 1.0.0" "${PLIST_PATH}"
