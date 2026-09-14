@@ -13,7 +13,7 @@ ClickShift is an unofficial personal utility and is not affiliated with Zwift or
 
 ## Build
 
-Requirements: macOS 13 or later and Xcode Command Line Tools.
+Requirements: macOS 13 or later and Xcode Command Line Tools. The build script produces a universal app for Apple Silicon and Intel Macs.
 
 ```sh
 ./scripts/build-app.sh

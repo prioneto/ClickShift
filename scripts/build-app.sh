@@ -12,10 +12,15 @@ RESOURCES_DIR=${CONTENTS_DIR}/Resources
 ICONSET_DIR=${PROJECT_DIR}/.build/AppIcon.iconset
 
 cd "${PROJECT_DIR}"
-swift build -c release
+swift build -c release --arch arm64 --scratch-path .build/arm64
+swift build -c release --arch x86_64 --scratch-path .build/x86_64
+lipo -create \
+  ".build/arm64/arm64-apple-macosx/release/ClickShift" \
+  ".build/x86_64/x86_64-apple-macosx/release/ClickShift" \
+  -output ".build/ClickShift-universal"
 
 mkdir -p "${MACOS_DIR}" "${RESOURCES_DIR}" "${ICONSET_DIR}"
-cp ".build/release/ClickShift" "${MACOS_DIR}/ClickShift"
+cp ".build/ClickShift-universal" "${MACOS_DIR}/ClickShift"
 cp "LICENSE" "${CONTENTS_DIR}/LICENSE.txt"
 cp "THIRD_PARTY_NOTICES.md" "${CONTENTS_DIR}/THIRD_PARTY_NOTICES.md"
 cp "Resources/AppIcon.png" "${RESOURCES_DIR}/AppIcon.png"
