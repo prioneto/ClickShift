@@ -1,59 +1,149 @@
+<p align="center">
+  <img src="Resources/AppIcon.png" width="128" alt="ClickShift icon">
+</p>
+
 # ClickShift
 
-ClickShift is a small, free macOS menu-bar utility for using the **right Zwift Click v2** with MyWhoosh:
+ClickShift is a small, free macOS menu-bar utility that lets a **right-hand Zwift Click v2** control virtual shifting in MyWhoosh.
 
-- `+` sends `K` (shift up in MyWhoosh)
-- `B` sends `I` (shift down in MyWhoosh)
-- reconnects automatically whenever the controller wakes or returns in range
-- runs quietly at login, begins connecting when MyWhoosh opens, and disconnects when MyWhoosh quits
-- uses the right controller only, so it does not need the left controller's periodic Zwift unlock
-- includes a native Finder/Dock icon and a compact monochrome menu-bar icon
+- `+` sends `K` — shift up
+- `B` sends `I` — shift down
+- Starts connecting automatically when MyWhoosh opens
+- Disconnects when MyWhoosh quits so the controller can sleep
+- Reconnects automatically if the controller drops or wakes again
+- Runs quietly as a menu-bar app with no Dock window
+- No accounts, analytics, advertising, or network service
 
-ClickShift is an unofficial personal utility and is not affiliated with Zwift or MyWhoosh.
+ClickShift is unofficial and is not affiliated with Zwift or MyWhoosh.
 
-## Build
+## Requirements
 
-Requirements: macOS 13 or later and Xcode Command Line Tools. The build script produces a universal app for Apple Silicon and Intel Macs.
+- macOS 13 Ventura or later
+- Apple Silicon or Intel Mac
+- Zwift Click v2 right controller
+- MyWhoosh for macOS with Virtual Shifting enabled
 
-```sh
-./scripts/build-app.sh
-```
+The downloadable app is universal and contains native `arm64` and `x86_64` executables.
 
-The packaged app is written to `dist/ClickShift.app` by default.
+## Download and install
 
-Run tests with:
+1. Download `ClickShift-v1.0.0-macOS-universal.zip` from the latest GitHub release.
+2. Unzip it and move `ClickShift.app` to `/Applications`.
+3. Open ClickShift once. It appears as a small shift icon in the menu bar.
+4. Approve Bluetooth access when macOS asks.
+5. Open the ClickShift menu and select **Enable Accessibility**. Enable ClickShift under **System Settings → Privacy & Security → Accessibility**.
+6. Keep **Run at login for MyWhoosh detection** enabled. ClickShift must be running quietly in the background to notice MyWhoosh launching.
 
-```sh
-swift test
-```
+### macOS security notice
 
-## Install and use
+The downloadable build is ad-hoc signed but is not notarized with a paid Apple Developer certificate. macOS may block the first launch because it cannot verify the developer.
 
-1. Run `./scripts/install.sh`, or drag `ClickShift.app` to Applications yourself.
-2. Approve Bluetooth access when macOS asks.
-3. Use **Enable Accessibility** in the menu and enable ClickShift in System Settings. This permission lets it send the `I`/`K` keys to MyWhoosh.
-4. Close Zwift and Zwift Companion so they do not take the Click connection.
-5. Open MyWhoosh. ClickShift detects `com.whoosh.whooshgame` and starts searching automatically.
-6. Press a button on the **right** Click to wake it. The bicycle icon becomes filled when connected.
-7. Enable Virtual Shifting in MyWhoosh and start a ride.
+If that happens:
 
-ClickShift registers itself as a macOS login item the first time it runs. While MyWhoosh is closed it remains idle and does not scan for Bluetooth devices. When MyWhoosh opens, ClickShift starts scanning; if the controller sleeps or disconnects, press a right-side button to wake it and it will reconnect automatically.
+1. Try to open ClickShift once and dismiss the warning.
+2. Open **System Settings → Privacy & Security**.
+3. Scroll to **Security** and choose **Open Anyway** for ClickShift.
+4. Confirm **Open**.
+
+Only bypass this warning for a build you obtained from this repository. You can also build the app from source instead.
+
+## Using ClickShift
+
+1. Quit Zwift, Zwift Companion, BikeControl, and other apps that might connect to the Click.
+2. Open MyWhoosh.
+3. Enable Virtual Shifting in MyWhoosh.
+4. Press a button on the **right-hand** Click to wake it.
+5. Wait for ClickShift's status to change to **Connected**.
+6. Use `+` to shift up and `B` to shift down.
+
+ClickShift identifies the right controller from its Zwift manufacturer data. It deliberately ignores the left controller, avoiding the left side's periodic unlock/restart behavior while still providing both shift directions.
+
+## Automatic behavior
+
+ClickShift registers itself as a macOS login item on first launch. It listens for the installed MyWhoosh app (`com.whoosh.whooshgame`):
+
+- **MyWhoosh closed:** ClickShift waits without initializing or scanning Bluetooth.
+- **MyWhoosh opened:** ClickShift starts searching for the right Click.
+- **Click disconnected:** ClickShift resumes searching after two seconds.
+- **MyWhoosh quit:** ClickShift disconnects and stops Bluetooth activity.
+
+You can start, stop, test, or force a reconnect from the menu-bar menu.
 
 ## Battery use
 
-While MyWhoosh is closed, ClickShift only listens for macOS application launch/quit notifications: it does not initialize or scan Bluetooth. While MyWhoosh is open, it scans only until the right Click connects. Once connected, it sends one three-byte keepalive every five seconds and otherwise waits for button notifications. This background work is tiny compared with running MyWhoosh itself.
+Battery impact on the Mac should be negligible:
 
-## Why the right controller?
+- While MyWhoosh is closed, ClickShift only receives macOS app launch/quit notifications.
+- While MyWhoosh is open, Bluetooth scanning runs only until the right Click connects.
+- Once connected, ClickShift sends one three-byte keepalive every five seconds and otherwise waits for button notifications.
 
-The Click v2 advertises its left and right pucks separately. ClickShift filters for the right-side manufacturer identifier and maps its `B` button to downshift, giving both shift directions on one puck without the left-side unlock/restart behavior.
+The keepalive keeps the Click awake during a MyWhoosh session, which necessarily uses more of the Click's coin-cell battery than leaving it asleep. ClickShift disconnects as soon as MyWhoosh quits.
+
+## Privacy
+
+ClickShift operates locally and does not contain telemetry, analytics, advertising, user accounts, or network communication. It does not read MyWhoosh account or ride data.
+
+The app stores only small local preferences, such as the remembered CoreBluetooth identifier for the right controller and the launch-at-login setup state. macOS manages the Bluetooth, Accessibility, and login-item permissions.
 
 ## Troubleshooting
 
-- **Only the left Click is found:** press a button on the right Click; it advertises for a short time after waking.
-- **Connected but MyWhoosh does not shift:** confirm Accessibility is enabled for ClickShift, enable Virtual Shifting in MyWhoosh, and use the two Test buttons while MyWhoosh is active.
-- **Controller is not found:** quit Zwift, Zwift Companion, BikeControl, or anything else that may already be connected to it.
-- **A firmware update breaks input:** the Click protocol is unofficial and reverse-engineered. Open an issue with the raw firmware/version details before changing the decoder.
+### The right Click is not found
 
-## Technical notes
+- Press a right-side button to wake it; the controller advertises only briefly after waking.
+- Close Zwift, Zwift Companion, BikeControl, and any other controller utility.
+- Confirm Bluetooth permission for ClickShift under **System Settings → Privacy & Security → Bluetooth**.
+- Replace the CR2032 battery if the controller indicates a low battery.
 
-The app uses CoreBluetooth and the Click v2's `0xFC82` service. It subscribes to the controller notification characteristics, performs the right-side `RideOn` handshake, sends a keepalive every five seconds, and decodes the active-low button mask. Keyboard events use macOS Quartz and therefore require Accessibility permission.
+### ClickShift finds only the left controller
+
+Wake the right controller. ClickShift intentionally ignores the left side.
+
+### Connected, but MyWhoosh does not shift
+
+- Enable Virtual Shifting in MyWhoosh.
+- Confirm ClickShift is enabled under **Privacy & Security → Accessibility**.
+- Keep MyWhoosh active and use **Test down** and **Test up** in ClickShift's menu.
+- MyWhoosh's current macOS shortcuts must remain `I` for shift down and `K` for shift up.
+
+### It does not start with MyWhoosh
+
+ClickShift itself must already be running. Enable **Run at login for MyWhoosh detection**, then check **System Settings → General → Login Items & Extensions** if macOS has disabled it.
+
+### A Click firmware update breaks input
+
+The Click protocol is unofficial and reverse-engineered, so future firmware may change it. Open a GitHub issue with your Click firmware version and what ClickShift reports.
+
+## Build from source
+
+Requirements: Xcode or Xcode Command Line Tools with Swift 5.10 or later.
+
+```sh
+git clone https://github.com/prioneto/ClickShift.git
+cd ClickShift
+swift test
+./scripts/build-app.sh
+```
+
+The build script produces `dist/ClickShift.app`, containing both Apple Silicon and Intel architectures. To copy and open it from the command line:
+
+```sh
+./scripts/install.sh
+```
+
+## Uninstall
+
+1. Turn off **Run at login for MyWhoosh detection** from the ClickShift menu.
+2. Choose **Quit ClickShift**.
+3. Move `/Applications/ClickShift.app` to the Trash.
+4. Optionally remove ClickShift from the Bluetooth and Accessibility lists in System Settings.
+
+## Limitations
+
+- Right-hand Zwift Click v2 only.
+- MyWhoosh must use its `I`/`K` keyboard shortcuts.
+- The public build is ad-hoc signed and not Apple-notarized.
+- Hardware behavior may change with future Click firmware.
+
+## License and credits
+
+ClickShift is released under the MIT License. See [LICENSE](LICENSE) and [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md) for attribution and protocol-research credits.
