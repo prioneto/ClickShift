@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#fff1df"><meta name="description" content="Answers to common ClickShift questions.">
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml"><link rel="stylesheet" href="/assets/site.css">
+  <title>FAQs — ClickShift</title>
+</head>
+<body>
+  <header class="site-header shell">
+    <a class="brand" href="/" aria-label="ClickShift home"><img src="/assets/clickshift-icon.png" alt="" width="44" height="44"><span>ClickShift</span></a>
+    <a class="version-chip" href="/changelog/">v1.2.1</a>
+    <nav aria-label="Primary navigation"><a href="/faqs/"><span class="nav-icon">●</span> FAQs</a><a href="/changelog/"><span class="nav-icon">▦</span> Changelog</a><a class="nav-download" href="/download/"><span>⌘</span> Download for Mac</a></nav>
+  </header>
+  <main class="subpage-main">
+    <div class="subpage-eyebrow">Everything you need to know</div>
+    <h1>Frequently asked questions.</h1>
+    <p class="subpage-lead">ClickShift is intentionally small. Here’s exactly what it connects to, what it controls, and what you need to get riding.</p>
+    <div class="faq-list">
+      <article class="faq-item"><button class="faq-question" aria-expanded="false"><span>Does ClickShift connect to my trainer?</span><span>+</span></button><div class="faq-answer"><div><p>No. Your training app connects directly to your trainer and controls power, cadence, resistance, and ERG mode. ClickShift connects only to the right-hand Zwift Click v2 and turns button presses into keyboard shortcuts.</p></div></div></article>
+      <article class="faq-item"><button class="faq-question" aria-expanded="false"><span>Which training apps work?</span><span>+</span></button><div class="faq-answer"><div><p>ClickShift includes profiles for MyWhoosh, TrainingPeaks Virtual, and ROUVY. Any other macOS app that accepts keyboard shortcuts can be entered as a Custom app. Zwift is excluded because it supports the Click natively.</p></div></div></article>
+      <article class="faq-item"><button class="faq-question" aria-expanded="false"><span>Why does ClickShift need Accessibility access?</span><span>+</span></button><div class="faq-answer"><div><p>macOS requires Accessibility permission for an app to send keyboard shortcuts. ClickShift never reads your typing. With safety mode enabled, it sends shift keys only while your selected training app is focused.</p></div></div></article>
+      <article class="faq-item"><button class="faq-question" aria-expanded="false"><span>Why only the right Click v2?</span><span>+</span></button><div class="faq-answer"><div><p>The right controller provides both directions through the + and B buttons without relying on the left controller’s periodic unlock behavior. ClickShift deliberately ignores the left controller.</p></div></div></article>
+      <article class="faq-item"><button class="faq-question" aria-expanded="false"><span>Will ClickShift reconnect automatically?</span><span>+</span></button><div class="faq-answer"><div><p>Yes. It remembers the right controller, reconnects after brief drops or sleep, and starts looking when your selected training app opens. Press + or B once if the controller needs to wake.</p></div></div></article>
+      <article class="faq-item"><button class="faq-question" aria-expanded="false"><span>How much battery does it use?</span><span>+</span></button><div class="faq-answer"><div><p>Mac impact is negligible. ClickShift waits quietly while the selected training app is closed, scans only until the Click connects, and sends a tiny keepalive during a session. It disconnects when the training app quits.</p></div></div></article>
+      <article class="faq-item"><button class="faq-question" aria-expanded="false"><span>Is any ride or account data collected?</span><span>+</span></button><div class="faq-answer"><div><p>No. ClickShift has no account, analytics, advertising, or network service. Settings and the remembered controller identifier stay locally on your Mac.</p></div></div></article>
+      <article class="faq-item"><button class="faq-question" aria-expanded="false"><span>Why might macOS warn me when opening it?</span><span>+</span></button><div class="faq-answer"><div><p>The current download is ad-hoc signed but not Apple-notarized. If macOS blocks it, open System Settings → Privacy &amp; Security, choose Open Anyway, and confirm. The complete source is available on GitHub.</p></div></div></article>
+    </div>
+  </main>
+  <footer class="site-footer shell"><div class="footer-brand"><img src="/assets/clickshift-icon.png" alt="" width="34" height="34"><b>ClickShift</b></div><p>Free, private virtual shifting for Mac.</p><div class="footer-links"><a href="/">Home</a><a href="/changelog/">Changelog</a><a href="https://github.com/prioneto/ClickShift">GitHub</a></div></footer>
+  <script src="/assets/site.js"></script>
+</body>
+</html>

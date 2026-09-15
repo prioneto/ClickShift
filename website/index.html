@@ -1,0 +1,105 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#fff1df">
+  <meta name="description" content="Use your right-hand Zwift Click v2 to shift in MyWhoosh and other keyboard-controlled training apps on Mac.">
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="/assets/site.css">
+  <title>ClickShift — Virtual shifting for Mac</title>
+</head>
+<body>
+  <header class="site-header shell">
+    <a class="brand" href="/" aria-label="ClickShift home">
+      <img src="/assets/clickshift-icon.png" alt="" width="44" height="44">
+      <span>ClickShift</span>
+    </a>
+    <a class="version-chip" href="/changelog/" aria-label="View ClickShift changelog">v1.2.1</a>
+    <nav aria-label="Primary navigation">
+      <a href="/faqs/"><span class="nav-icon">●</span> FAQs</a>
+      <a href="/changelog/"><span class="nav-icon">▦</span> Changelog</a>
+      <a class="nav-download" href="/download/"><span>⌘</span> Download for Mac</a>
+    </nav>
+  </header>
+
+  <main>
+    <section class="hero shell" aria-labelledby="hero-title">
+      <div class="hero-copy">
+        <h1 id="hero-title">Your Click.<br>Now for every<br><span class="marker">ride app.</span></h1>
+        <p class="hero-summary">Simple, private virtual shifting for macOS. Your trainer stays with your training app. ClickShift connects only to your right Click.</p>
+        <div class="hero-actions">
+          <a class="button button-dark" href="https://github.com/prioneto/ClickShift/releases/download/v1.2.1/ClickShift-v1.2.1-macOS-universal.zip"><span>⌘</span> Download for Mac</a>
+          <a class="button button-soft" href="https://github.com/prioneto/ClickShift">View source <span class="button-tag">Free</span></a>
+        </div>
+      </div>
+
+      <div class="demo-stage">
+      <div class="desktop-demo" id="demo" data-state="idle" aria-label="Interactive ClickShift demonstration">
+        <div class="desktop-menubar">
+          <div class="menu-left"><span class="traffic-lights" aria-hidden="true"><i></i><i></i><i></i></span><b>ClickShift</b><span>File</span><span>View</span></div>
+          <button class="menu-clickshift" id="menuToggle" aria-expanded="true" aria-controls="clickshiftPanel">
+            <img src="/assets/clickshift-icon.png" alt="ClickShift" width="22" height="22">
+            <span class="menu-status-dot"></span>
+          </button>
+          <div class="menu-right"><span>⌁</span><span>100%</span><span>09:41</span></div>
+        </div>
+        <div class="desktop-content">
+          <div class="gear-readout"><small>VIRTUAL GEAR</small><strong id="gearNumber">14</strong></div>
+        </div>
+
+        <div class="clickshift-panel" id="clickshiftPanel">
+          <div class="panel-head">
+            <img src="/assets/clickshift-icon.png" alt="" width="38" height="38">
+            <div><b>ClickShift</b><span>Virtual shifting for your ride app</span></div>
+            <i class="panel-dot"></i>
+          </div>
+          <div class="connection-row">
+            <span class="connection-symbol">○</span>
+            <div><b id="connectionTitle">Waiting for your ride app</b><span id="connectionDetail">Opens when your selected app starts</span></div>
+          </div>
+          <div class="shift-row">
+            <button class="shift-control" data-shift="up"><kbd>+</kbd><span><b>Up</b><small>Sends K</small></span></button>
+            <span class="shift-divider"></span>
+            <button class="shift-control" data-shift="down"><kbd>B</kbd><span><b>Down</b><small>Sends I</small></span></button>
+          </div>
+          <div class="panel-footer"><button type="button">Reconnect</button><span></span><button type="button">Settings</button><button type="button">Quit</button></div>
+        </div>
+      </div>
+      <div class="demo-hint">↖ Psst… it’s interactive!</div>
+      </div>
+    </section>
+
+    <section class="feature-section shell" aria-labelledby="features-title">
+      <h2 id="features-title" class="sr-only">ClickShift features</h2>
+      <div class="feature-grid">
+        <button class="feature" data-demo-state="connected"><span class="feature-icon">↕</span><b>Instant<br>shifting</b><small>One press, one clean shift</small></button>
+        <button class="feature" data-demo-state="safe"><span class="feature-icon">▣</span><b>App-safe<br>shortcuts</b><small>No stray I or K presses</small></button>
+        <button class="feature" data-demo-state="searching"><span class="feature-icon">⌁</span><b>Automatic<br>reconnect</b><small>Wake your Click and ride</small></button>
+        <button class="feature" data-demo-state="mapping"><span class="feature-icon">⌨</span><b>Custom<br>controls</b><small>Pick buttons and keys</small></button>
+        <button class="feature" data-demo-state="step"><span class="feature-icon">③</span><b>Gear-step<br>control</b><small>Shift 1, 2, or 3 at once</small></button>
+        <button class="feature" data-demo-state="profile"><span class="feature-icon">◫</span><b>Ride app<br>profiles</b><small>MyWhoosh, ROUVY, and more</small></button>
+        <button class="feature" data-demo-state="private"><span class="feature-icon">⌑</span><b>Private by<br>design</b><small>No accounts or analytics</small></button>
+        <button class="feature" data-demo-state="native"><span class="feature-icon">ϟ</span><b>Blazing fast<br>native app</b><small>Swift, universal, and quiet</small></button>
+      </div>
+      <a class="button button-dark center-download" href="https://github.com/prioneto/ClickShift/releases/download/v1.2.1/ClickShift-v1.2.1-macOS-universal.zip"><span>⌘</span> Download for Mac</a>
+    </section>
+
+    <section class="wordmark-section shell" aria-label="ClickShift">
+      <div class="social-row">
+        <a href="https://github.com/prioneto/ClickShift" aria-label="ClickShift on GitHub">GH</a>
+        <a href="/faqs/" aria-label="ClickShift frequently asked questions">?</a>
+        <a href="/changelog/" aria-label="ClickShift changelog">↺</a>
+      </div>
+      <div class="giant-wordmark">ClickShift</div>
+    </section>
+  </main>
+
+  <footer class="site-footer shell">
+    <div class="footer-brand"><img src="/assets/clickshift-icon.png" alt="" width="34" height="34"><b>ClickShift</b></div>
+    <p>Made for riders who want their Click to work beyond Zwift.</p>
+    <div class="footer-links"><a href="/faqs/">FAQs</a><a href="/changelog/">Changelog</a><a href="https://github.com/prioneto/ClickShift">GitHub</a></div>
+  </footer>
+  <script src="/assets/site.js"></script>
+</body>
+</html>
