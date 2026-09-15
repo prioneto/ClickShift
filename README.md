@@ -11,7 +11,8 @@ ClickShift is a small, free macOS menu-bar utility that lets a **right-hand Zwif
 - Starts connecting automatically when MyWhoosh opens
 - Disconnects when MyWhoosh quits so the controller can sleep
 - Reconnects automatically if the controller drops or wakes again
-- Runs quietly as a menu-bar app with no Dock window
+- Runs quietly as a menu-bar app with a compact native macOS panel
+- Opens controls, permissions, and startup options in a real tabbed Settings window
 - No accounts, analytics, advertising, or network service
 
 ClickShift is unofficial and is not affiliated with Zwift or MyWhoosh.
@@ -27,12 +28,12 @@ The downloadable app is universal and contains native `arm64` and `x86_64` execu
 
 ## Download and install
 
-1. Download `ClickShift-v1.0.0-macOS-universal.zip` from the [latest GitHub release](https://github.com/prioneto/ClickShift/releases/latest).
+1. Download `ClickShift-v1.1.0-macOS-universal.zip` from the [latest GitHub release](https://github.com/prioneto/ClickShift/releases/latest).
 2. Unzip it and move `ClickShift.app` to `/Applications`.
 3. Open ClickShift once. It appears as a small shift icon in the menu bar.
 4. Approve Bluetooth access when macOS asks.
-5. Open the ClickShift menu and select **Enable Accessibility**. Enable ClickShift under **System Settings → Privacy & Security → Accessibility**.
-6. Keep **Run at login for MyWhoosh detection** enabled. ClickShift must be running quietly in the background to notice MyWhoosh launching.
+5. Open the ClickShift menu, choose **Settings**, then open the **Permissions** tab and select **Enable Accessibility**. Enable ClickShift under **System Settings → Privacy & Security → Accessibility**.
+6. In the **General** tab, keep **Open ClickShift when you log in** enabled. ClickShift must be running quietly in the background to notice MyWhoosh launching.
 
 ### macOS security notice
 
@@ -67,7 +68,11 @@ ClickShift registers itself as a macOS login item on first launch. It listens fo
 - **Click disconnected:** ClickShift resumes searching after two seconds.
 - **MyWhoosh quit:** ClickShift disconnects and stops Bluetooth activity.
 
-You can start, stop, test, or force a reconnect from the menu-bar menu.
+The menu-bar panel shows connection state and the current button mapping. Choose **Settings** to open a normal macOS application window with three tabs:
+
+- **General:** launch-at-login and connection controls
+- **Controls:** button mappings and shift tests
+- **Permissions:** Accessibility, Bluetooth help, privacy, and version information
 
 ## Battery use
 
@@ -102,12 +107,12 @@ Wake the right controller. ClickShift intentionally ignores the left side.
 
 - Enable Virtual Shifting in MyWhoosh.
 - Confirm ClickShift is enabled under **Privacy & Security → Accessibility**.
-- Keep MyWhoosh active and use **Test down** and **Test up** in ClickShift's menu.
+- Keep MyWhoosh active and use **Test Shift Down** and **Test Shift Up** in **Settings → Controls**.
 - MyWhoosh's current macOS shortcuts must remain `I` for shift down and `K` for shift up.
 
 ### It does not start with MyWhoosh
 
-ClickShift itself must already be running. Enable **Run at login for MyWhoosh detection**, then check **System Settings → General → Login Items & Extensions** if macOS has disabled it.
+ClickShift itself must already be running. Enable **Open ClickShift when you log in** under **Settings → General**, then check **System Settings → General → Login Items & Extensions** if macOS has disabled it.
 
 ### A Click firmware update breaks input
 
@@ -132,7 +137,7 @@ The build script produces `dist/ClickShift.app`, containing both Apple Silicon a
 
 ## Uninstall
 
-1. Turn off **Run at login for MyWhoosh detection** from the ClickShift menu.
+1. Turn off **Open ClickShift when you log in** under **ClickShift Settings → General**.
 2. Choose **Quit ClickShift**.
 3. Move `/Applications/ClickShift.app` to the Trash.
 4. Optionally remove ClickShift from the Bluetooth and Accessibility lists in System Settings.

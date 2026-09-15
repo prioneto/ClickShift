@@ -8,7 +8,10 @@ struct ClickShiftApp: App {
 
     var body: some Scene {
         MenuBarExtra {
-            menuContent
+            MenuBarPanel(
+                controller: controller,
+                loginController: loginController
+            )
         } label: {
             if let icon = AppAssets.image(
                 named: "MenuBarIcon",
@@ -17,102 +20,256 @@ struct ClickShiftApp: App {
             ) {
                 Image(nsImage: icon)
             } else {
-                Image(systemName: controller.state.isConnected ? "bicycle.circle.fill" : "bicycle.circle")
+                Image(systemName: controller.state.isConnected ? "arrow.up.arrow.down.circle.fill" : "arrow.up.arrow.down.circle")
             }
         }
         .menuBarExtraStyle(.window)
+
+        Settings {
+            SettingsView(
+                controller: controller,
+                loginController: loginController
+            )
+        }
+    }
+}
+
+private struct MenuBarPanel: View {
+    @ObservedObject var controller: ClickController
+    @ObservedObject var loginController: LaunchAtLoginController
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 14) {
+            header
+            statusCard
+            shiftSummary
+            footer
+        }
+        .padding(16)
+        .frame(width: 324)
+        .onAppear {
+            controller.refreshPermissions()
+            loginController.refresh()
+        }
     }
 
-    private var menuContent: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            HStack(spacing: 8) {
-                if let icon = AppAssets.image(named: "AppIcon") {
-                    Image(nsImage: icon)
-                        .resizable()
-                        .scaledToFit()
-                        .frame(width: 38, height: 38)
-                } else {
-                    Image(systemName: "gearshape.2.fill")
-                        .font(.title2)
-                        .frame(width: 38, height: 38)
-                }
-                VStack(alignment: .leading, spacing: 2) {
-                    Text("ClickShift")
-                        .font(.headline)
-                    HStack(spacing: 5) {
-                        Circle()
-                            .fill(controller.state.isConnected ? Color.green : Color.orange)
-                            .frame(width: 7, height: 7)
-                        Text(controller.state.label)
-                            .font(.caption)
-                            .foregroundStyle(.secondary)
-                    }
-                }
-            }
+    private var header: some View {
+        HStack(spacing: 11) {
+            AppIconView(size: 38)
 
-            Divider()
-
-            VStack(alignment: .leading, spacing: 5) {
-                Label(
-                    controller.myWhooshRunning ? "MyWhoosh is open" : "MyWhoosh is closed",
-                    systemImage: controller.myWhooshRunning ? "play.circle.fill" : "pause.circle"
-                )
-                Label("+  →  Shift up (K)", systemImage: "plus.circle")
-                Label("B  →  Shift down (I)", systemImage: "minus.circle")
-                Text(controller.lastAction)
+            VStack(alignment: .leading, spacing: 2) {
+                Text("ClickShift")
+                    .font(.headline)
+                Text("Virtual shifting for MyWhoosh")
                     .font(.caption)
                     .foregroundStyle(.secondary)
             }
 
-            if !controller.accessibilityGranted {
-                Button("Enable Accessibility…") {
-                    controller.requestAccessibility()
+            Spacer()
+
+            Circle()
+                .fill(statusColor)
+                .frame(width: 8, height: 8)
+                .accessibilityLabel(controller.state.label)
+        }
+    }
+
+    private var statusCard: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            HStack(spacing: 10) {
+                Image(systemName: statusSymbol)
+                    .font(.system(size: 18, weight: .medium))
+                    .foregroundStyle(statusColor)
+                    .frame(width: 24)
+
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(statusTitle)
+                        .font(.system(.body, design: .rounded, weight: .semibold))
+                    Text(controller.state.label)
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                        .lineLimit(2)
                 }
-                Text("Required so ClickShift can send I/K to MyWhoosh.")
+
+                Spacer(minLength: 8)
+
+                if controller.myWhooshRunning && !controller.state.isConnected {
+                    ProgressView()
+                        .controlSize(.small)
+                }
+            }
+
+            HStack(spacing: 6) {
+                StatusPill(
+                    title: "MyWhoosh",
+                    symbol: controller.myWhooshRunning ? "play.fill" : "pause.fill",
+                    isActive: controller.myWhooshRunning
+                )
+                StatusPill(
+                    title: "Click v2",
+                    symbol: controller.state.isConnected ? "dot.radiowaves.left.and.right" : "antenna.radiowaves.left.and.right.slash",
+                    isActive: controller.state.isConnected
+                )
+            }
+        }
+        .padding(12)
+        .clickShiftStatusSurface()
+    }
+
+    private var shiftSummary: some View {
+        VStack(spacing: 9) {
+            HStack {
+                ShiftMapping(key: "+", direction: "Up", shortcut: "K", symbol: "arrow.up")
+                Divider().frame(height: 30)
+                ShiftMapping(key: "B", direction: "Down", shortcut: "I", symbol: "arrow.down")
+            }
+
+            if controller.lastAction != "No shifts yet" {
+                Text(controller.lastAction)
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .transition(.opacity)
+            }
+        }
+    }
+
+    private var footer: some View {
+        VStack(spacing: 8) {
+            Divider()
+
+            HStack(spacing: 8) {
+                if controller.state == .stopped {
+                    Button("Start") { controller.start() }
+                } else {
+                    Button("Reconnect") { controller.reconnectNow() }
+                        .disabled(!controller.myWhooshRunning)
+                }
+
+                Spacer()
+
+                OpenSettingsButton()
+
+                Button("Quit") {
+                    NSApplication.shared.terminate(nil)
+                }
+                .keyboardShortcut("q")
+            }
+            .controlSize(.small)
+        }
+    }
+
+    private var statusTitle: String {
+        if controller.state.isConnected { return "Ready to shift" }
+        if !controller.myWhooshRunning { return "Standing by" }
+        return "Getting ready"
+    }
+
+    private var statusSymbol: String {
+        switch controller.state {
+        case .connected: return "checkmark.circle.fill"
+        case .bluetoothOff, .failed: return "exclamationmark.triangle.fill"
+        case .waitingForMyWhoosh, .stopped: return "moon.zzz.fill"
+        default: return "dot.radiowaves.left.and.right"
+        }
+    }
+
+    private var statusColor: Color {
+        switch controller.state {
+        case .connected: return .green
+        case .bluetoothOff, .failed: return .red
+        case .waitingForMyWhoosh, .stopped: return .secondary
+        default: return .orange
+        }
+    }
+}
+
+private struct OpenSettingsButton: View {
+    var body: some View {
+        if #available(macOS 14.0, *) {
+            SettingsLink {
+                Label("Settings", systemImage: "gearshape")
+            }
+        } else {
+            Button {
+                NSApp.activate(ignoringOtherApps: true)
+                NSApp.sendAction(Selector(("showPreferencesWindow:")), to: nil, from: nil)
+            } label: {
+                Label("Settings", systemImage: "gearshape")
+            }
+        }
+    }
+}
+
+private struct AppIconView: View {
+    let size: CGFloat
+
+    var body: some View {
+        Group {
+            if let icon = AppAssets.image(named: "AppIcon") {
+                Image(nsImage: icon)
+                    .resizable()
+                    .scaledToFit()
+            } else {
+                Image(systemName: "arrow.up.arrow.down.circle.fill")
+                    .resizable()
+                    .scaledToFit()
+                    .foregroundStyle(.tint)
+            }
+        }
+        .frame(width: size, height: size)
+    }
+}
+
+private struct StatusPill: View {
+    let title: String
+    let symbol: String
+    let isActive: Bool
+
+    var body: some View {
+        Label(title, systemImage: symbol)
+            .font(.caption2.weight(.medium))
+            .foregroundStyle(isActive ? Color.primary : Color.secondary)
+            .padding(.horizontal, 8)
+            .padding(.vertical, 5)
+            .background(.background.opacity(0.7), in: Capsule())
+    }
+}
+
+private struct ShiftMapping: View {
+    let key: String
+    let direction: String
+    let shortcut: String
+    let symbol: String
+
+    var body: some View {
+        HStack(spacing: 8) {
+            Text(key)
+                .font(.system(.body, design: .rounded, weight: .bold))
+                .frame(width: 26, height: 26)
+                .background(.quaternary, in: RoundedRectangle(cornerRadius: 7, style: .continuous))
+
+            VStack(alignment: .leading, spacing: 1) {
+                Label(direction, systemImage: symbol)
+                    .font(.caption.weight(.semibold))
+                Text("Sends \(shortcut)")
                     .font(.caption2)
                     .foregroundStyle(.secondary)
             }
 
-            HStack {
-                Button("Test down") { controller.testShiftDown() }
-                Button("Test up") { controller.testShiftUp() }
-            }
-
-            Divider()
-
-            if controller.state == .stopped {
-                Button("Start") { controller.start() }
-            } else {
-                Button("Reconnect now") { controller.reconnectNow() }
-                Button("Stop") { controller.stop() }
-            }
-
-            Toggle(
-                "Run at login for MyWhoosh detection",
-                isOn: Binding(
-                    get: { loginController.isEnabled },
-                    set: { loginController.setEnabled($0) }
-                )
-            )
-
-            if let error = loginController.errorMessage {
-                Text(error)
-                    .font(.caption2)
-                    .foregroundStyle(.red)
-            }
-
-            Divider()
-
-            Button("Quit ClickShift") {
-                NSApplication.shared.terminate(nil)
-            }
-            .keyboardShortcut("q")
+            Spacer(minLength: 0)
         }
-        .padding(14)
-        .frame(width: 300)
-        .onAppear {
-            controller.refreshPermissions()
-            loginController.refresh()
+        .frame(maxWidth: .infinity)
+    }
+}
+
+private extension View {
+    @ViewBuilder
+    func clickShiftStatusSurface() -> some View {
+        if #available(macOS 26.0, *) {
+            glassEffect(.regular, in: RoundedRectangle(cornerRadius: 14, style: .continuous))
+        } else {
+            background(.quaternary, in: RoundedRectangle(cornerRadius: 12, style: .continuous))
         }
     }
 }

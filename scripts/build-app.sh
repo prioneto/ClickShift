@@ -10,6 +10,8 @@ CONTENTS_DIR=${APP_DIR}/Contents
 MACOS_DIR=${CONTENTS_DIR}/MacOS
 RESOURCES_DIR=${CONTENTS_DIR}/Resources
 ICONSET_DIR=${PROJECT_DIR}/.build/AppIcon.iconset
+APP_VERSION=1.1.0
+BUILD_NUMBER=2
 
 cd "${PROJECT_DIR}"
 swift build -c release --arch arm64 --scratch-path .build/arm64
@@ -19,10 +21,11 @@ lipo -create \
   ".build/x86_64/x86_64-apple-macosx/release/ClickShift" \
   -output ".build/ClickShift-universal"
 
+rm -rf "${APP_DIR}" "${ICONSET_DIR}"
 mkdir -p "${MACOS_DIR}" "${RESOURCES_DIR}" "${ICONSET_DIR}"
 cp ".build/ClickShift-universal" "${MACOS_DIR}/ClickShift"
-cp "LICENSE" "${CONTENTS_DIR}/LICENSE.txt"
-cp "THIRD_PARTY_NOTICES.md" "${CONTENTS_DIR}/THIRD_PARTY_NOTICES.md"
+cp "LICENSE" "${RESOURCES_DIR}/LICENSE.txt"
+cp "THIRD_PARTY_NOTICES.md" "${RESOURCES_DIR}/THIRD_PARTY_NOTICES.md"
 cp "Resources/AppIcon.png" "${RESOURCES_DIR}/AppIcon.png"
 sips -z 36 36 "Resources/MenuBarIcon.png" --out "${RESOURCES_DIR}/MenuBarIcon.png" >/dev/null
 
@@ -47,8 +50,8 @@ rm -f "${PLIST_PATH}"
 /usr/libexec/PlistBuddy -c "Add :CFBundleIconFile string AppIcon" "${PLIST_PATH}"
 /usr/libexec/PlistBuddy -c "Add :CFBundleName string ClickShift" "${PLIST_PATH}"
 /usr/libexec/PlistBuddy -c "Add :CFBundlePackageType string APPL" "${PLIST_PATH}"
-/usr/libexec/PlistBuddy -c "Add :CFBundleShortVersionString string 1.0.0" "${PLIST_PATH}"
-/usr/libexec/PlistBuddy -c "Add :CFBundleVersion string 1" "${PLIST_PATH}"
+/usr/libexec/PlistBuddy -c "Add :CFBundleShortVersionString string ${APP_VERSION}" "${PLIST_PATH}"
+/usr/libexec/PlistBuddy -c "Add :CFBundleVersion string ${BUILD_NUMBER}" "${PLIST_PATH}"
 /usr/libexec/PlistBuddy -c "Add :LSMinimumSystemVersion string 13.0" "${PLIST_PATH}"
 /usr/libexec/PlistBuddy -c "Add :LSUIElement bool true" "${PLIST_PATH}"
 /usr/libexec/PlistBuddy -c "Add :NSBluetoothAlwaysUsageDescription string ClickShift connects to your right Zwift Click v2 controller." "${PLIST_PATH}"
