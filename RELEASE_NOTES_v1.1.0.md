@@ -5,11 +5,13 @@ This release gives ClickShift a cleaner, more native macOS interface and makes s
 ## What changed
 
 - Redesigned the menu-bar panel around a compact inline connection status and the two shift mappings.
-- Rebuilt Settings with a custom Alcove-inspired navigation rail, layered glass cards, soft color glows, and compact controls.
+- Rebuilt Settings with a custom Alcove-inspired navigation rail, solid inset cards, restrained color accents, and compact controls.
 - Moved startup, connection, test, permission, privacy, and version details into a real macOS Settings window.
 - Added a clean sidebar with General, Controls, Permissions, and About pages.
 - Opens Settings through a dedicated application window controller for reliable menu-bar operation.
 - Adds a guided first-run setup for app selection, permissions, and controller discovery.
+- Gives the Setup Assistant the same layered visual design, clearer progress, and polished status cards as Settings.
+- Uses flat solid-color surfaces throughout and a rebuilt edge-to-edge app icon with no gradients, glow, or outer black ring.
 - Adds a default-on safety mode that sends keys only to the focused riding app.
 - Adds configurable Click buttons, keyboard outputs, and 1–3 shifts per press.
 - Adds MyWhoosh, Zwift, IndieVelo, ROUVY, and custom target profiles.
@@ -36,4 +38,4 @@ This build is ad-hoc signed and not notarized. If macOS blocks the first launch,
 
 ## SHA-256
 
-`7325e910dc54ef9852b4092c6c5e19e5baad66b5734f15036d2c8c42ff795bcf`
+`9ff147ed82fe7c66460358ebca3fd0ddf50e6b7715b94b20666a35a55fe72936`

@@ -92,7 +92,6 @@ struct SettingsView: View {
         VStack(alignment: .leading, spacing: 0) {
             HStack(spacing: 11) {
                 SettingsAppIcon(size: 38)
-                    .shadow(color: Color.black.opacity(0.35), radius: 8, y: 4)
 
                 VStack(alignment: .leading, spacing: 2) {
                     Text("ClickShift")
@@ -132,7 +131,6 @@ struct SettingsView: View {
                                 Circle()
                                     .fill(destination.accent)
                                     .frame(width: 5, height: 5)
-                                    .shadow(color: destination.accent.opacity(0.8), radius: 5)
                             }
                         }
                         .foregroundStyle(selection == destination ? Color.white : Color.white.opacity(0.62))
@@ -141,13 +139,7 @@ struct SettingsView: View {
                         .background {
                             if selection == destination {
                                 RoundedRectangle(cornerRadius: 13, style: .continuous)
-                                    .fill(
-                                        LinearGradient(
-                                            colors: [destination.accent.opacity(0.2), destination.accent.opacity(0.08)],
-                                            startPoint: .leading,
-                                            endPoint: .trailing
-                                        )
-                                    )
+                                    .fill(destination.accent.opacity(0.14))
                                     .overlay {
                                         RoundedRectangle(cornerRadius: 13, style: .continuous)
                                             .strokeBorder(destination.accent.opacity(0.22), lineWidth: 0.7)
@@ -168,7 +160,6 @@ struct SettingsView: View {
                     Circle()
                         .fill(connectionColor)
                         .frame(width: 7, height: 7)
-                        .shadow(color: connectionColor.opacity(0.7), radius: 5)
                     Text(connectionLabel)
                         .font(.caption.weight(.medium))
                         .foregroundStyle(Color.white.opacity(0.72))
@@ -625,7 +616,6 @@ private struct SettingsCard<Content: View>: View {
                 Capsule()
                     .fill(ClickShiftTheme.blue)
                     .frame(width: 13, height: 4)
-                    .shadow(color: ClickShiftTheme.blue.opacity(0.65), radius: 4)
 
                 Text(title)
                     .font(.system(size: 10, weight: .bold, design: .rounded))
@@ -637,26 +627,11 @@ private struct SettingsCard<Content: View>: View {
             VStack(spacing: 0) {
                 content
             }
-            .background(
-                LinearGradient(
-                    colors: [Color.white.opacity(0.075), Color.white.opacity(0.035)],
-                    startPoint: .topLeading,
-                    endPoint: .bottomTrailing
-                ),
-                in: RoundedRectangle(cornerRadius: 18, style: .continuous)
-            )
+            .background(Color.white.opacity(0.05), in: RoundedRectangle(cornerRadius: 18, style: .continuous))
             .overlay {
                 RoundedRectangle(cornerRadius: 18, style: .continuous)
-                    .strokeBorder(
-                        LinearGradient(
-                            colors: [Color.white.opacity(0.13), Color.white.opacity(0.035)],
-                            startPoint: .topLeading,
-                            endPoint: .bottomTrailing
-                        ),
-                        lineWidth: 0.8
-                    )
+                    .strokeBorder(Color.white.opacity(0.085), lineWidth: 0.8)
             }
-            .shadow(color: Color.black.opacity(0.16), radius: 18, y: 9)
         }
     }
 }
@@ -685,14 +660,7 @@ private struct SettingsRow<Trailing: View>: View {
                 .font(.system(size: 13, weight: .medium))
                 .foregroundStyle(ClickShiftTheme.blue)
                 .frame(width: 32, height: 32)
-                .background(
-                    LinearGradient(
-                        colors: [ClickShiftTheme.blue.opacity(0.17), ClickShiftTheme.teal.opacity(0.08)],
-                        startPoint: .topLeading,
-                        endPoint: .bottomTrailing
-                    ),
-                    in: RoundedRectangle(cornerRadius: 10, style: .continuous)
-                )
+                .background(ClickShiftTheme.blue.opacity(0.12), in: RoundedRectangle(cornerRadius: 10, style: .continuous))
 
             VStack(alignment: .leading, spacing: 2) {
                 Text(title)
@@ -817,28 +785,7 @@ private struct CardDivider: View {
 
 private struct SettingsBackdrop: View {
     var body: some View {
-        ZStack {
-            LinearGradient(
-                colors: [
-                    Color(red: 0.045, green: 0.058, blue: 0.085),
-                    Color(red: 0.025, green: 0.032, blue: 0.048),
-                ],
-                startPoint: .topLeading,
-                endPoint: .bottomTrailing
-            )
-
-            Circle()
-                .fill(ClickShiftTheme.blue.opacity(0.12))
-                .frame(width: 430, height: 430)
-                .blur(radius: 105)
-                .offset(x: 280, y: -260)
-
-            Circle()
-                .fill(ClickShiftTheme.teal.opacity(0.07))
-                .frame(width: 360, height: 360)
-                .blur(radius: 110)
-                .offset(x: -310, y: 260)
-        }
+        Color(red: 0.027, green: 0.034, blue: 0.048)
         .ignoresSafeArea()
     }
 }
@@ -888,7 +835,6 @@ private struct GearStepPicker: View {
                             if selection == step {
                                 RoundedRectangle(cornerRadius: 7, style: .continuous)
                                     .fill(ClickShiftTheme.blue.opacity(0.68))
-                                    .shadow(color: ClickShiftTheme.blue.opacity(0.25), radius: 6)
                             }
                         }
                 }

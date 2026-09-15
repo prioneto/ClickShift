@@ -26,12 +26,17 @@ final class SetupWindowController: NSObject {
             window = setupWindow
         } else {
             window = NSWindow(
-                contentRect: NSRect(x: 0, y: 0, width: 660, height: 520),
-                styleMask: [.titled, .closable, .miniaturizable],
+                contentRect: NSRect(x: 0, y: 0, width: 720, height: 550),
+                styleMask: [.titled, .closable, .miniaturizable, .fullSizeContentView],
                 backing: .buffered,
                 defer: false
             )
             window.title = "Set Up ClickShift"
+            window.titleVisibility = .hidden
+            window.titlebarAppearsTransparent = true
+            window.backgroundColor = .clear
+            window.isOpaque = false
+            window.isMovableByWindowBackground = true
             window.contentViewController = NSHostingController(rootView: content)
             window.isReleasedWhenClosed = false
             window.center()
@@ -41,5 +46,8 @@ final class SetupWindowController: NSObject {
         NSApp.activate(ignoringOtherApps: true)
         window.makeKeyAndOrderFront(nil)
         window.orderFrontRegardless()
+        DispatchQueue.main.async {
+            window.makeFirstResponder(nil)
+        }
     }
 }

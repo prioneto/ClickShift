@@ -11,7 +11,7 @@ MACOS_DIR=${CONTENTS_DIR}/MacOS
 RESOURCES_DIR=${CONTENTS_DIR}/Resources
 ICONSET_DIR=${PROJECT_DIR}/.build/AppIcon.iconset
 APP_VERSION=1.1.0
-BUILD_NUMBER=6
+BUILD_NUMBER=7
 
 cd "${PROJECT_DIR}"
 rm -rf "${PROJECT_DIR}/.build/arm64" "${PROJECT_DIR}/.build/x86_64"
@@ -29,6 +29,7 @@ mkdir -p "${MACOS_DIR}" "${RESOURCES_DIR}" "${ICONSET_DIR}"
 cp ".build/ClickShift-universal" "${MACOS_DIR}/ClickShift"
 cp "LICENSE" "${RESOURCES_DIR}/LICENSE.txt"
 cp "THIRD_PARTY_NOTICES.md" "${RESOURCES_DIR}/THIRD_PARTY_NOTICES.md"
+swift "scripts/generate-icon.swift" "Resources/AppIcon.png"
 cp "Resources/AppIcon.png" "${RESOURCES_DIR}/AppIcon.png"
 sips -z 36 36 "Resources/MenuBarIcon.png" --out "${RESOURCES_DIR}/MenuBarIcon.png" >/dev/null
 
