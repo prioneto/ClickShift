@@ -255,9 +255,18 @@ private struct GeneralSettingsPage: View {
     var body: some View {
         VStack(spacing: 18) {
             SettingsCard(title: "APP PROFILE") {
+                SettingsToggleRow(
+                    title: "Detect the running ride app",
+                    detail: "Automatically follows a supported app when it opens",
+                    symbol: "sparkle.magnifyingglass",
+                    isOn: $settings.automaticallyDetectRideApp
+                )
+
+                CardDivider()
+
                 SettingsRow(
                     title: "Target app",
-                    detail: "Controls detection and keyboard safety",
+                    detail: settings.automaticallyDetectRideApp ? "Current automatic selection" : "Manual selection for detection and safety",
                     symbol: "square.stack.3d.up"
                 ) {
                     Menu {

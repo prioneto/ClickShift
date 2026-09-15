@@ -124,12 +124,25 @@ struct SetupAssistantView: View {
     private var welcomeStep: some View {
         SetupStage(
             eyebrow: "WELCOME",
-            title: "Set up your ride",
-            detail: "Choose the app ClickShift should watch. Safety mode will protect every shift from going anywhere else.",
+            title: "Open your ride app",
+            detail: "ClickShift detects supported ride apps automatically. Safety mode keeps every shift inside the detected app.",
             symbol: "arrow.up.arrow.down.circle.fill",
             color: SetupTheme.blue
         ) {
-            SetupPanel(title: "RIDING APP") {
+            SetupPanel(title: "AUTOMATIC DETECTION") {
+                SetupStatusLine(
+                    text: controller.myWhooshRunning ? "Found \(settings.targetName)" : "Waiting for a supported ride app",
+                    symbol: controller.myWhooshRunning ? "checkmark.circle.fill" : "sparkle.magnifyingglass",
+                    color: controller.myWhooshRunning ? .green : SetupTheme.blue
+                )
+
+                Text(controller.myWhooshRunning
+                     ? "You’re ready to continue. ClickShift will use this app automatically."
+                     : "Open a recognized training app and it will appear here. For any other app, choose Custom app below.")
+                    .font(.system(size: 11, weight: .medium, design: .rounded))
+                    .foregroundStyle(Color.white.opacity(0.46))
+                    .fixedSize(horizontal: false, vertical: true)
+
                 Menu {
                     ForEach(AppSettings.Profile.allCases) { profile in
                         Button {
@@ -146,7 +159,7 @@ struct SetupAssistantView: View {
                     HStack(spacing: 10) {
                         Image(systemName: "figure.indoor.cycle")
                             .foregroundStyle(SetupTheme.blue)
-                        Text(settings.profile.title)
+                        Text("Choose manually: \(settings.profile.title)")
                             .font(.system(size: 13, weight: .semibold, design: .rounded))
                         Spacer()
                         Image(systemName: "chevron.down")
@@ -176,11 +189,6 @@ struct SetupAssistantView: View {
                         }
                 }
 
-                SetupStatusLine(
-                    text: controller.myWhooshRunning ? "\(settings.targetName) detected" : "You can open \(settings.targetName) later",
-                    symbol: controller.myWhooshRunning ? "checkmark.circle.fill" : "clock",
-                    color: controller.myWhooshRunning ? .green : Color.white.opacity(0.4)
-                )
             }
         }
     }

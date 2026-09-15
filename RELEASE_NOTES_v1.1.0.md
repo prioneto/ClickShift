@@ -15,7 +15,8 @@ This release gives ClickShift a cleaner, more native macOS interface and makes s
 - Adds a default-on safety mode that sends keys only to the focused riding app.
 - Adds configurable Click buttons, keyboard outputs, and 1–3 shifts per press.
 - Makes gear-step segments, sidebar items, and preference rows fully clickable, with clearer custom checkboxes and roomier menu actions.
-- Adds MyWhoosh, Zwift, IndieVelo, ROUVY, and custom target profiles.
+- Adds MyWhoosh, TrainingPeaks Virtual, ROUVY, and custom target profiles for training apps without native Click support.
+- Detects a running supported ride app automatically, with an optional manual profile fallback.
 - Reconnects through the remembered controller and shows wake guidance.
 - Adds privacy-safe diagnostics, opt-in meaningful notifications, and connection-aware menu-bar icon colors.
 - Updated setup and troubleshooting instructions for the new Settings layout.
@@ -39,4 +40,4 @@ This build is ad-hoc signed and not notarized. If macOS blocks the first launch,
 
 ## SHA-256
 
-`380881fe7597691eeb26a25a0fb304e2815899036b466fb3c926711bc83de17a`
+`1c73fc296b0b568ac565b16614553672da05d2b625bf8cdf2ee5990d7ff3ee0b`

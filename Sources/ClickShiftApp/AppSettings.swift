@@ -5,7 +5,6 @@ import Foundation
 final class AppSettings: ObservableObject {
     enum Profile: String, CaseIterable, Identifiable {
         case myWhoosh
-        case zwift
         case indieVelo
         case rouvy
         case custom
@@ -15,8 +14,7 @@ final class AppSettings: ObservableObject {
         var title: String {
             switch self {
             case .myWhoosh: return "MyWhoosh"
-            case .zwift: return "Zwift"
-            case .indieVelo: return "IndieVelo"
+            case .indieVelo: return "TrainingPeaks Virtual"
             case .rouvy: return "ROUVY"
             case .custom: return "Custom app"
             }
@@ -25,7 +23,6 @@ final class AppSettings: ObservableObject {
         fileprivate var bundleIdentifiers: Set<String> {
             switch self {
             case .myWhoosh: return ["com.whoosh.whooshgame"]
-            case .zwift: return ["com.zwift.Zwift", "com.zwift.ZwiftGame", "com.zwift.ZwiftLauncher"]
             case .indieVelo: return []
             case .rouvy: return []
             case .custom: return []
@@ -35,8 +32,7 @@ final class AppSettings: ObservableObject {
         fileprivate var processNames: [String] {
             switch self {
             case .myWhoosh: return ["MyWhoosh"]
-            case .zwift: return ["Zwift"]
-            case .indieVelo: return ["IndieVelo", "indieVelo"]
+            case .indieVelo: return ["TrainingPeaks Virtual", "IndieVelo", "indieVelo"]
             case .rouvy: return ["ROUVY", "Rouvy"]
             case .custom: return []
             }
@@ -50,6 +46,7 @@ final class AppSettings: ObservableObject {
     @Published var downKey: String { didSet { save() } }
     @Published var gearStep: Int { didSet { save() } }
     @Published var profile: Profile { didSet { save() } }
+    @Published var automaticallyDetectRideApp: Bool { didSet { save() } }
     @Published var customAppName: String { didSet { save() } }
     @Published var notificationsEnabled: Bool { didSet { save() } }
     @Published var didCompleteSetup: Bool { didSet { save() } }
@@ -65,6 +62,7 @@ final class AppSettings: ObservableObject {
         downKey = defaults.string(forKey: "downKey") ?? "I"
         gearStep = max(1, min(3, defaults.integer(forKey: "gearStep") == 0 ? 1 : defaults.integer(forKey: "gearStep")))
         profile = Profile(rawValue: defaults.string(forKey: "profile") ?? "myWhoosh") ?? .myWhoosh
+        automaticallyDetectRideApp = defaults.object(forKey: "automaticallyDetectRideApp") as? Bool ?? true
         customAppName = defaults.string(forKey: "customAppName") ?? ""
         notificationsEnabled = defaults.bool(forKey: "notificationsEnabled")
         didCompleteSetup = defaults.bool(forKey: "didCompleteSetup")
@@ -77,10 +75,31 @@ final class AppSettings: ObservableObject {
     }
 
     func selectProfile(_ newProfile: Profile) {
+        automaticallyDetectRideApp = false
         profile = newProfile
         if newProfile == .myWhoosh {
             upKey = "K"
             downKey = "I"
+        }
+    }
+
+    func updateProfileFromRunningApps() {
+        guard automaticallyDetectRideApp, let detectedProfile = detectedRunningProfile(), detectedProfile != profile else {
+            return
+        }
+        profile = detectedProfile
+    }
+
+    private func detectedRunningProfile() -> Profile? {
+        let applications = NSWorkspace.shared.runningApplications
+
+        if let frontmost = NSWorkspace.shared.frontmostApplication,
+           let profile = Self.detectableProfiles.first(where: { $0.matches(frontmost) }) {
+            return profile
+        }
+
+        return Self.detectableProfiles.first { profile in
+            applications.contains(where: profile.matches)
         }
     }
 
@@ -104,9 +123,24 @@ final class AppSettings: ObservableObject {
         defaults.set(downKey, forKey: "downKey")
         defaults.set(gearStep, forKey: "gearStep")
         defaults.set(profile.rawValue, forKey: "profile")
+        defaults.set(automaticallyDetectRideApp, forKey: "automaticallyDetectRideApp")
         defaults.set(customAppName, forKey: "customAppName")
         defaults.set(notificationsEnabled, forKey: "notificationsEnabled")
         defaults.set(didCompleteSetup, forKey: "didCompleteSetup")
+    }
+
+    private static let detectableProfiles: [Profile] = [.myWhoosh, .indieVelo, .rouvy]
+}
+
+private extension AppSettings.Profile {
+    func matches(_ app: NSRunningApplication) -> Bool {
+        if let bundleIdentifier = app.bundleIdentifier, bundleIdentifiers.contains(bundleIdentifier) {
+            return true
+        }
+        guard let name = app.localizedName else { return false }
+        return processNames.contains { candidate in
+            name.localizedCaseInsensitiveContains(candidate)
+        }
     }
 }
 

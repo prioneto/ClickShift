@@ -4,12 +4,12 @@
 
 # ClickShift
 
-ClickShift is a small, free macOS menu-bar utility that lets a **right-hand Zwift Click v2** control virtual shifting in MyWhoosh or another keyboard-controlled riding app.
+ClickShift is a small, free macOS menu-bar utility that lets a **right-hand Zwift Click v2** control virtual shifting in keyboard-controlled training apps that do not support the Click natively.
 
 - `+` sends `K` — shift up
 - `B` sends `I` — shift down
-- Starts connecting automatically when MyWhoosh opens
-- Disconnects when MyWhoosh quits so the controller can sleep
+- Detects MyWhoosh, TrainingPeaks Virtual, or ROUVY automatically when one opens
+- Disconnects when the ride app quits so the controller can sleep
 - Reconnects automatically if the controller drops or wakes again
 - Sends shift keys only when the selected riding app is focused by default
 - Supports configurable buttons, keys, app profiles, and 1–3 shifts per press
@@ -33,7 +33,7 @@ The downloadable app is universal and contains native `arm64` and `x86_64` execu
 
 1. Download `ClickShift-v1.1.0-macOS-universal.zip` from the [latest GitHub release](https://github.com/prioneto/ClickShift/releases/latest).
 2. Unzip it and move `ClickShift.app` to `/Applications`.
-3. Open ClickShift once. The Setup Assistant guides you through choosing an app profile, Bluetooth, Accessibility, and finding the right Click.
+3. Open ClickShift once. The Setup Assistant detects an open supported ride app and guides you through Bluetooth, Accessibility, and finding the right Click. A manual app choice remains available.
 4. Keep **Launch at login** enabled on the final setup page. ClickShift must be running quietly in the background to notice your riding app launching.
 
 ### macOS security notice
@@ -80,7 +80,9 @@ The menu-bar panel shows connection state and the current button mapping. Choose
 
 ### App profiles and mappings
 
-Profiles are available for MyWhoosh, Zwift, IndieVelo, ROUVY, and a custom application name. A profile chooses which running and focused application ClickShift considers safe; keyboard shortcuts can differ between app versions, so verify and set the two keys under **Settings → Controls**. Selecting MyWhoosh restores its documented `K`-up and `I`-down defaults.
+ClickShift automatically follows a running MyWhoosh, TrainingPeaks Virtual, or ROUVY app. You can turn detection off under **Settings → General** and choose one of those profiles or any custom application name manually. A profile chooses which running and focused application ClickShift considers safe; keyboard shortcuts differ between apps, so verify and set the two keys under **Settings → Controls**. Selecting MyWhoosh manually restores its documented `K`-up and `I`-down defaults.
+
+Zwift is intentionally not a target: it supports the Zwift Click natively, so an extra keyboard bridge is unnecessary.
 
 The right Click’s `+`, `B`, directional, `A`, `Y`, `Z`, and minus buttons can be assigned to either direction. Supported keyboard outputs include letters, numbers, common punctuation, arrows, Page Up, Page Down, Return, and Space.
 
