@@ -1,5 +1,6 @@
 @preconcurrency import CoreBluetooth
 import AppKit
+import Combine
 import Foundation
 import ClickShiftCore
 
@@ -8,6 +9,7 @@ final class ClickController: NSObject, ObservableObject {
         case bluetoothOff
         case scanning
         case foundLeft
+        case waitingForWake
         case connecting
         case connected
         case reconnecting
@@ -20,10 +22,11 @@ final class ClickController: NSObject, ObservableObject {
             case .bluetoothOff: return "Bluetooth is off"
             case .scanning: return "Searching for right Click v2…"
             case .foundLeft: return "Left Click found; wake the right Click"
+            case .waitingForWake: return "Wake your right Click"
             case .connecting: return "Connecting…"
             case .connected: return "Connected"
             case .reconnecting: return "Disconnected; searching again…"
-            case .waitingForMyWhoosh: return "Waiting for MyWhoosh"
+            case .waitingForMyWhoosh: return "Waiting for riding app"
             case .stopped: return "Stopped"
             case .failed(let message): return message
             }
@@ -34,11 +37,23 @@ final class ClickController: NSObject, ObservableObject {
         }
     }
 
-    @Published private(set) var state: ConnectionState = .waitingForMyWhoosh
+    @Published private(set) var state: ConnectionState = .waitingForMyWhoosh {
+        didSet {
+            guard oldValue != state else { return }
+            recordEvent(state.label)
+            notifyForStateChange(from: oldValue, to: state)
+        }
+    }
     @Published private(set) var lastAction = "No shifts yet"
     @Published private(set) var accessibilityGranted = false
     @Published private(set) var deviceName = "Right Zwift Click v2"
     @Published private(set) var myWhooshRunning = false
+
+    let settings: AppSettings
+
+    var bluetoothAuthorizationGranted: Bool {
+        CBManager.authorization == .allowedAlways
+    }
 
     private let serviceUUID = CBUUID(string: "0000FC82-0000-1000-8000-00805F9B34FB")
     private let asyncUUID = CBUUID(string: "00000002-19CA-4651-86E5-FA29DCDD09D1")
@@ -58,16 +73,27 @@ final class ClickController: NSObject, ObservableObject {
     private var writeCharacteristic: CBCharacteristic?
     private var keepaliveTimer: Timer?
     private var reconnectWorkItem: DispatchWorkItem?
+    private var settingsObservers = Set<AnyCancellable>()
     private var pressedButtons = Set<ClickButton>()
     private var handshakeStarted = false
     private var shouldRun = false
+    private var setupMode = false
+    private var attemptedRememberedConnection = false
+    private var unknownPacketCount = 0
+    private var diagnosticEvents: [String] = []
     private var lastUnknownCandidate: UUID?
     private var workspaceObservers = [NSObjectProtocol]()
 
-    override init() {
+    init(settings: AppSettings) {
+        self.settings = settings
         super.init()
         accessibilityGranted = keyboard.isAccessibilityGranted
         startWatchingMyWhoosh()
+        settings.$profile
+            .combineLatest(settings.$customAppName)
+            .dropFirst()
+            .sink { [weak self] _ in self?.refreshMyWhooshState() }
+            .store(in: &settingsObservers)
     }
 
     deinit {
@@ -79,6 +105,18 @@ final class ClickController: NSObject, ObservableObject {
     func start() {
         shouldRun = true
         beginScanningIfPossible()
+    }
+
+    func startSetupScan() {
+        setupMode = true
+        shouldRun = true
+        attemptedRememberedConnection = false
+        beginScanningIfPossible()
+    }
+
+    func finishSetup() {
+        setupMode = false
+        refreshMyWhooshState()
     }
 
     func stop() {
@@ -105,12 +143,9 @@ final class ClickController: NSObject, ObservableObject {
     }
 
     private func refreshMyWhooshState() {
-        let running = NSWorkspace.shared.runningApplications.contains { app in
-            if app.bundleIdentifier == "com.whoosh.whooshgame" { return true }
-            return app.localizedName?.localizedCaseInsensitiveContains("MyWhoosh") == true
-        }
+        let running = NSWorkspace.shared.runningApplications.contains { settings.matchesTarget($0) }
         myWhooshRunning = running
-        setMyWhooshRunning(running)
+        if !setupMode { setMyWhooshRunning(running) }
     }
 
     private func stop(waitingForMyWhoosh: Bool) {
@@ -124,6 +159,7 @@ final class ClickController: NSObject, ObservableObject {
             central.cancelPeripheralConnection(peripheral)
         }
         clearConnection()
+        attemptedRememberedConnection = false
         state = waitingForMyWhoosh ? .waitingForMyWhoosh : .stopped
     }
 
@@ -136,6 +172,7 @@ final class ClickController: NSObject, ObservableObject {
             central.cancelPeripheralConnection(peripheral)
         }
         clearConnection()
+        attemptedRememberedConnection = false
         beginScanningIfPossible()
     }
 
@@ -151,11 +188,26 @@ final class ClickController: NSObject, ObservableObject {
     }
 
     func testShiftUp() {
-        performShift(.up, source: "Test")
+        testShift(.up)
     }
 
     func testShiftDown() {
-        performShift(.down, source: "Test")
+        testShift(.down)
+    }
+
+    private func testShift(_ direction: KeyboardShifter.Direction) {
+        guard settings.onlySendToTarget else {
+            performShift(direction, source: "Test")
+            return
+        }
+        guard let target = NSWorkspace.shared.runningApplications.first(where: { settings.matchesTarget($0) }) else {
+            lastAction = "Open \(settings.targetName) before testing"
+            return
+        }
+        target.activate(options: [.activateIgnoringOtherApps])
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.25) { [weak self] in
+            self?.performShift(direction, source: "Test")
+        }
     }
 
     private func beginScanningIfPossible() {
@@ -166,6 +218,15 @@ final class ClickController: NSObject, ObservableObject {
         }
         guard peripheral == nil else { return }
 
+        if !attemptedRememberedConnection,
+           let identifierString = UserDefaults.standard.string(forKey: "preferredRightClickIdentifier"),
+           let identifier = UUID(uuidString: identifierString),
+           let remembered = central.retrievePeripherals(withIdentifiers: [identifier]).first {
+            attemptedRememberedConnection = true
+            connect(remembered, waitingForWake: true)
+            return
+        }
+
         state = .scanning
         central.scanForPeripherals(
             withServices: nil,
@@ -173,12 +234,12 @@ final class ClickController: NSObject, ObservableObject {
         )
     }
 
-    private func connect(_ candidate: CBPeripheral) {
+    private func connect(_ candidate: CBPeripheral, waitingForWake: Bool = false) {
         central.stopScan()
         reconnectWorkItem?.cancel()
         peripheral = candidate
         candidate.delegate = self
-        state = .connecting
+        state = waitingForWake ? .waitingForWake : .connecting
         central.connect(candidate, options: [CBConnectPeripheralOptionNotifyOnDisconnectionKey: true])
     }
 
@@ -222,25 +283,58 @@ final class ClickController: NSObject, ObservableObject {
     }
 
     private func handleNotification(_ data: Data) {
-        guard let nowPressed = ButtonPacketDecoder.decode(data) else { return }
+        guard let nowPressed = ButtonPacketDecoder.decode(data) else {
+            unknownPacketCount += 1
+            if unknownPacketCount == 5 {
+                recordEvent("Unrecognized controller packets detected")
+                NotificationManager.shared.send(
+                    title: "ClickShift controller warning",
+                    body: "The Click firmware may have changed its button messages.",
+                    enabled: settings.notificationsEnabled
+                )
+            }
+            return
+        }
+        unknownPacketCount = 0
         let newlyPressed = nowPressed.subtracting(pressedButtons)
 
-        if newlyPressed.contains(.plus) {
-            performShift(.up, source: "+")
+        if newlyPressed.contains(settings.upButton) {
+            performShift(.up, source: settings.upButton.displayName)
         }
-        if newlyPressed.contains(.b) {
-            performShift(.down, source: "B")
+        if settings.downButton != settings.upButton, newlyPressed.contains(settings.downButton) {
+            performShift(.down, source: settings.downButton.displayName)
         }
         pressedButtons = nowPressed
     }
 
     private func performShift(_ direction: KeyboardShifter.Direction, source: String) {
-        let success = keyboard.shift(direction)
+        if settings.onlySendToTarget && !settings.matchesTarget(NSWorkspace.shared.frontmostApplication) {
+            lastAction = "Blocked: \(settings.targetName) isn’t focused"
+            recordEvent(lastAction)
+            return
+        }
+
+        let key = direction == .up ? settings.upKey : settings.downKey
+        guard KeyboardShifter.isSupported(key: key) else {
+            lastAction = "Unsupported key: \(key)"
+            recordEvent(lastAction)
+            return
+        }
+
+        let success = keyboard.shift(key: key, repeatCount: settings.gearStep)
         accessibilityGranted = keyboard.isAccessibilityGranted
-        let directionLabel = direction == .up ? "Shift up (K)" : "Shift down (I)"
+        let directionLabel = direction == .up ? "Shift up (\(key))" : "Shift down (\(key))"
         lastAction = success
-            ? "\(source): \(directionLabel)"
+            ? "\(source): \(directionLabel) ×\(settings.gearStep)"
             : "Accessibility permission needed"
+        recordEvent(lastAction)
+        if !success {
+            NotificationManager.shared.send(
+                title: "ClickShift needs Accessibility",
+                body: "Allow Accessibility so ClickShift can send your shift keys.",
+                enabled: settings.notificationsEnabled
+            )
+        }
     }
 
     private func scheduleReconnect() {
@@ -251,7 +345,7 @@ final class ClickController: NSObject, ObservableObject {
             self?.beginScanningIfPossible()
         }
         reconnectWorkItem = item
-        DispatchQueue.main.asyncAfter(deadline: .now() + 2, execute: item)
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.6, execute: item)
     }
 
     private func clearConnection() {
@@ -261,6 +355,53 @@ final class ClickController: NSObject, ObservableObject {
         writeCharacteristic = nil
         handshakeStarted = false
         pressedButtons.removeAll()
+    }
+
+    func diagnosticsReport() -> String {
+        let version = Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "Development"
+        let events = diagnosticEvents.suffix(30).map { "- \($0)" }.joined(separator: "\n")
+        return """
+        ClickShift privacy-safe diagnostics
+        Version: \(version)
+        macOS: \(ProcessInfo.processInfo.operatingSystemVersionString)
+        Profile: \(settings.profile.title)
+        State: \(state.label)
+        Target running: \(myWhooshRunning)
+        Accessibility: \(accessibilityGranted ? "Allowed" : "Required")
+        Safety mode: \(settings.onlySendToTarget ? "On" : "Off")
+        Gear step: \(settings.gearStep)
+        Up mapping: \(settings.upButton.rawValue) -> \(settings.upKey)
+        Down mapping: \(settings.downButton.rawValue) -> \(settings.downKey)
+
+        Recent local events (no account, ride, or controller identifiers):
+        \(events.isEmpty ? "- None" : events)
+        """
+    }
+
+    private func recordEvent(_ message: String) {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "HH:mm:ss"
+        diagnosticEvents.append("[\(formatter.string(from: Date()))] \(message)")
+        if diagnosticEvents.count > 50 { diagnosticEvents.removeFirst(diagnosticEvents.count - 50) }
+    }
+
+    private func notifyForStateChange(from oldState: ConnectionState, to newState: ConnectionState) {
+        switch newState {
+        case .connected:
+            NotificationManager.shared.send(
+                title: "Click v2 connected",
+                body: "ClickShift is ready for \(settings.targetName).",
+                enabled: settings.notificationsEnabled
+            )
+        case .reconnecting where oldState.isConnected:
+            NotificationManager.shared.send(
+                title: "Click v2 disconnected",
+                body: "Wake the right Click; reconnection is automatic.",
+                enabled: settings.notificationsEnabled
+            )
+        default:
+            break
+        }
     }
 }
 
@@ -310,11 +451,13 @@ extension ClickController: CBCentralManagerDelegate {
     }
 
     func centralManager(_ central: CBCentralManager, didConnect peripheral: CBPeripheral) {
+        attemptedRememberedConnection = true
         peripheral.discoverServices([serviceUUID])
     }
 
     func centralManager(_ central: CBCentralManager, didFailToConnect peripheral: CBPeripheral, error: Error?) {
         clearConnection()
+        attemptedRememberedConnection = false
         state = .failed("Could not connect: \(error?.localizedDescription ?? "unknown error")")
         scheduleReconnect()
     }
@@ -325,6 +468,7 @@ extension ClickController: CBCentralManagerDelegate {
         error: Error?
     ) {
         clearConnection()
+        attemptedRememberedConnection = false
         scheduleReconnect()
     }
 }

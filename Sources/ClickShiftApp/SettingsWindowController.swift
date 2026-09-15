@@ -9,10 +9,12 @@ final class SettingsWindowController: NSObject, NSWindowDelegate {
 
     func show(
         controller: ClickController,
+        settings: AppSettings,
         loginController: LaunchAtLoginController
     ) {
         let window = settingsWindow ?? makeWindow(
             controller: controller,
+            settings: settings,
             loginController: loginController
         )
 
@@ -25,10 +27,12 @@ final class SettingsWindowController: NSObject, NSWindowDelegate {
 
     private func makeWindow(
         controller: ClickController,
+        settings: AppSettings,
         loginController: LaunchAtLoginController
     ) -> NSWindow {
         let content = SettingsView(
             controller: controller,
+            settings: settings,
             loginController: loginController
         )
         let hostingController = NSHostingController(rootView: content)

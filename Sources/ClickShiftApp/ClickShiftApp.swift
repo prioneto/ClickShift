@@ -3,32 +3,88 @@ import SwiftUI
 
 @main
 struct ClickShiftApp: App {
-    @StateObject private var controller = ClickController()
-    @StateObject private var loginController = LaunchAtLoginController()
+    @StateObject private var settings: AppSettings
+    @StateObject private var controller: ClickController
+    @StateObject private var loginController: LaunchAtLoginController
+
+    init() {
+        let settings = AppSettings()
+        let controller = ClickController(settings: settings)
+        let loginController = LaunchAtLoginController()
+        _settings = StateObject(wrappedValue: settings)
+        _controller = StateObject(wrappedValue: controller)
+        _loginController = StateObject(wrappedValue: loginController)
+
+        if !settings.didCompleteSetup {
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.6) {
+                SetupWindowController.shared.show(
+                    controller: controller,
+                    settings: settings,
+                    loginController: loginController
+                )
+            }
+        }
+    }
 
     var body: some Scene {
         MenuBarExtra {
             MenuBarPanel(
                 controller: controller,
+                settings: settings,
                 loginController: loginController
             )
         } label: {
-            if let icon = AppAssets.image(
+            if let icon = AppAssets.tintedImage(
                 named: "MenuBarIcon",
-                template: true,
+                color: menuBarNSColor,
                 size: NSSize(width: 18, height: 18)
             ) {
                 Image(nsImage: icon)
+                    .renderingMode(.original)
             } else {
                 Image(systemName: controller.state.isConnected ? "arrow.up.arrow.down.circle.fill" : "arrow.up.arrow.down.circle")
+                    .foregroundStyle(menuBarColor)
             }
         }
         .menuBarExtraStyle(.window)
+        .commands {
+            CommandGroup(replacing: .appSettings) {
+                Button("Settings…") {
+                    SettingsWindowController.shared.show(
+                        controller: controller,
+                        settings: settings,
+                        loginController: loginController
+                    )
+                }
+                .keyboardShortcut(",", modifiers: .command)
+            }
+        }
+    }
+
+    private var menuBarColor: Color {
+        if !controller.accessibilityGranted && controller.myWhooshRunning { return .red }
+        switch controller.state {
+        case .connected: return .green
+        case .scanning, .connecting, .reconnecting, .foundLeft, .waitingForWake: return .orange
+        case .bluetoothOff, .failed: return .red
+        case .waitingForMyWhoosh, .stopped: return .secondary
+        }
+    }
+
+    private var menuBarNSColor: NSColor {
+        if !controller.accessibilityGranted && controller.myWhooshRunning { return .systemRed }
+        switch controller.state {
+        case .connected: return .systemGreen
+        case .scanning, .connecting, .reconnecting, .foundLeft, .waitingForWake: return .systemOrange
+        case .bluetoothOff, .failed: return .systemRed
+        case .waitingForMyWhoosh, .stopped: return .secondaryLabelColor
+        }
     }
 }
 
 private struct MenuBarPanel: View {
     @ObservedObject var controller: ClickController
+    @ObservedObject var settings: AppSettings
     @ObservedObject var loginController: LaunchAtLoginController
 
     var body: some View {
@@ -54,7 +110,7 @@ private struct MenuBarPanel: View {
             VStack(alignment: .leading, spacing: 2) {
                 Text("ClickShift")
                     .font(.headline)
-                Text("Virtual shifting for MyWhoosh")
+                Text("Virtual shifting for \(settings.targetName)")
                     .font(.caption)
                     .foregroundStyle(.secondary)
             }
@@ -97,9 +153,9 @@ private struct MenuBarPanel: View {
     private var shiftSummary: some View {
         VStack(spacing: 9) {
             HStack {
-                ShiftMapping(key: "+", direction: "Up", shortcut: "K", symbol: "arrow.up")
+                ShiftMapping(key: settings.upButton.displayName, direction: "Up", shortcut: settings.upKey, symbol: "arrow.up")
                 Divider().frame(height: 30)
-                ShiftMapping(key: "B", direction: "Down", shortcut: "I", symbol: "arrow.down")
+                ShiftMapping(key: settings.downButton.displayName, direction: "Down", shortcut: settings.downKey, symbol: "arrow.down")
             }
 
             if controller.lastAction != "No shifts yet" {
@@ -128,6 +184,7 @@ private struct MenuBarPanel: View {
 
                 OpenSettingsButton(
                     controller: controller,
+                    settings: settings,
                     loginController: loginController
                 )
 
@@ -141,14 +198,16 @@ private struct MenuBarPanel: View {
     }
 
     private var connectionTitle: String {
+        if !controller.accessibilityGranted && controller.myWhooshRunning { return "Accessibility needed" }
         if controller.state.isConnected { return "Click v2 connected" }
-        if !controller.myWhooshRunning { return "Waiting for MyWhoosh" }
+        if !controller.myWhooshRunning { return "Waiting for \(settings.targetName)" }
         if controller.state == .stopped { return "ClickShift paused" }
         return controller.state.label
     }
 
     private var connectionDetail: String {
-        if controller.state.isConnected { return "MyWhoosh is open · Ready to shift" }
+        if !controller.accessibilityGranted && controller.myWhooshRunning { return "Open Settings → Permissions to allow shifting" }
+        if controller.state.isConnected { return "\(settings.targetName) is open · Ready to shift" }
         if !controller.myWhooshRunning { return "Connects automatically when it opens" }
         if controller.state == .stopped { return "Start it when you’re ready" }
         return "Wake the right controller if needed"
@@ -175,6 +234,7 @@ private struct MenuBarPanel: View {
 
 private struct OpenSettingsButton: View {
     @ObservedObject var controller: ClickController
+    @ObservedObject var settings: AppSettings
     @ObservedObject var loginController: LaunchAtLoginController
 
     var body: some View {
@@ -182,6 +242,7 @@ private struct OpenSettingsButton: View {
             DispatchQueue.main.async {
                 SettingsWindowController.shared.show(
                     controller: controller,
+                    settings: settings,
                     loginController: loginController
                 )
             }

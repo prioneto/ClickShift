@@ -1,5 +1,7 @@
 import AppKit
+import ClickShiftCore
 import SwiftUI
+import UniformTypeIdentifiers
 
 private enum SettingsDestination: String, CaseIterable, Identifiable {
     case general
@@ -39,6 +41,7 @@ private enum SettingsDestination: String, CaseIterable, Identifiable {
 
 struct SettingsView: View {
     @ObservedObject var controller: ClickController
+    @ObservedObject var settings: AppSettings
     @ObservedObject var loginController: LaunchAtLoginController
     @State private var selection: SettingsDestination? = .general
 
@@ -119,14 +122,15 @@ struct SettingsView: View {
         case .general:
             GeneralSettingsPage(
                 controller: controller,
+                settings: settings,
                 loginController: loginController
             )
         case .controls:
-            ControlsSettingsPage(controller: controller)
+            ControlsSettingsPage(controller: controller, settings: settings)
         case .permissions:
-            PermissionsSettingsPage(controller: controller)
+            PermissionsSettingsPage(controller: controller, settings: settings)
         case .about:
-            AboutSettingsPage(versionLabel: versionLabel)
+            AboutSettingsPage(controller: controller, settings: settings, versionLabel: versionLabel)
         }
     }
 
@@ -138,10 +142,43 @@ struct SettingsView: View {
 
 private struct GeneralSettingsPage: View {
     @ObservedObject var controller: ClickController
+    @ObservedObject var settings: AppSettings
     @ObservedObject var loginController: LaunchAtLoginController
 
     var body: some View {
         VStack(spacing: 18) {
+            SettingsCard(title: "APP PROFILE") {
+                SettingsRow(
+                    title: "Target app",
+                    detail: "Controls detection and keyboard safety",
+                    symbol: "square.stack.3d.up"
+                ) {
+                    Picker("", selection: Binding(
+                        get: { settings.profile },
+                        set: { settings.selectProfile($0) }
+                    )) {
+                        ForEach(AppSettings.Profile.allCases) { profile in
+                            Text(profile.title).tag(profile)
+                        }
+                    }
+                    .labelsHidden()
+                    .frame(width: 150)
+                }
+
+                if settings.profile == .custom {
+                    CardDivider()
+                    SettingsRow(
+                        title: "Application name",
+                        detail: "Must match the name shown in the Dock",
+                        symbol: "app"
+                    ) {
+                        TextField("App name", text: $settings.customAppName)
+                            .textFieldStyle(.roundedBorder)
+                            .frame(width: 150)
+                    }
+                }
+            }
+
             SettingsCard(title: "SYSTEM") {
                 SettingsRow(
                     title: "Launch at login",
@@ -157,6 +194,34 @@ private struct GeneralSettingsPage: View {
                     )
                     .labelsHidden()
                 }
+
+                CardDivider()
+
+                SettingsRow(
+                    title: "Only send keys to \(settings.targetName)",
+                    detail: "Blocks shifts whenever another app is focused",
+                    symbol: "lock.shield"
+                ) {
+                    Toggle("", isOn: $settings.onlySendToTarget)
+                        .labelsHidden()
+                }
+
+                CardDivider()
+
+                SettingsRow(
+                    title: "Meaningful notifications",
+                    detail: "Connection, disconnection, and permission alerts",
+                    symbol: "bell"
+                ) {
+                    Toggle("", isOn: Binding(
+                        get: { settings.notificationsEnabled },
+                        set: { enabled in
+                            settings.notificationsEnabled = enabled
+                            if enabled { NotificationManager.shared.requestAuthorization() }
+                        }
+                    ))
+                    .labelsHidden()
+                }
             }
 
             if let error = loginController.errorMessage {
@@ -165,7 +230,7 @@ private struct GeneralSettingsPage: View {
 
             SettingsCard(title: "CONNECTION") {
                 SettingsRow(
-                    title: "MyWhoosh",
+                    title: settings.targetName,
                     detail: controller.myWhooshRunning ? "Detected on this Mac" : "ClickShift is waiting quietly",
                     symbol: "play.rectangle"
                 ) {
@@ -203,8 +268,19 @@ private struct GeneralSettingsPage: View {
                 .padding(14)
             }
 
+            HStack {
+                Button("Run Setup Assistant") {
+                    SetupWindowController.shared.show(
+                        controller: controller,
+                        settings: settings,
+                        loginController: loginController
+                    )
+                }
+                Spacer()
+            }
+
             InlineNotice(
-                text: "Bluetooth scanning starts only while MyWhoosh is open and stops as soon as it closes.",
+                text: "Bluetooth scanning starts only while \(settings.targetName) is open and stops as soon as it closes.",
                 color: .secondary,
                 symbol: "leaf"
             )
@@ -214,19 +290,69 @@ private struct GeneralSettingsPage: View {
 
 private struct ControlsSettingsPage: View {
     @ObservedObject var controller: ClickController
+    @ObservedObject var settings: AppSettings
 
     var body: some View {
         VStack(spacing: 18) {
             SettingsCard(title: "BUTTON MAPPING") {
-                MappingSettingsRow(button: "+", action: "Shift up", output: "K", symbol: "arrow.up")
+                ConfigurableMappingRow(
+                    action: "Shift up",
+                    symbol: "arrow.up",
+                    button: $settings.upButton,
+                    key: $settings.upKey
+                )
                 CardDivider()
-                MappingSettingsRow(button: "B", action: "Shift down", output: "I", symbol: "arrow.down")
+                ConfigurableMappingRow(
+                    action: "Shift down",
+                    symbol: "arrow.down",
+                    button: $settings.downButton,
+                    key: $settings.downKey
+                )
             }
 
             InlineNotice(
-                text: "MyWhoosh must keep its default shortcuts: K for up and I for down.",
+                text: "Use a letter, number, arrow name, Page Up, or Page Down. MyWhoosh defaults to K for up and I for down.",
                 color: .secondary,
                 symbol: "keyboard"
+            )
+
+            if settings.upButton == settings.downButton {
+                InlineNotice(
+                    text: "Choose two different Click buttons so one press can’t trigger both directions.",
+                    color: .orange,
+                    symbol: "exclamationmark.triangle.fill"
+                )
+            }
+
+            if !KeyboardShifter.isSupported(key: settings.upKey) || !KeyboardShifter.isSupported(key: settings.downKey) {
+                InlineNotice(
+                    text: "One of the entered keys isn’t supported yet.",
+                    color: .orange,
+                    symbol: "exclamationmark.triangle.fill"
+                )
+            }
+
+            SettingsCard(title: "GEAR STEP") {
+                SettingsRow(
+                    title: "Shifts per press",
+                    detail: "Send the configured key more than once",
+                    symbol: "arrow.triangle.2.circlepath"
+                ) {
+                    Picker("", selection: $settings.gearStep) {
+                        Text("1").tag(1)
+                        Text("2").tag(2)
+                        Text("3").tag(3)
+                    }
+                    .pickerStyle(.segmented)
+                    .labelsHidden()
+                    .frame(width: 120)
+                }
+            }
+
+            InlineNotice(
+                text: "If \(settings.targetName) also has a gear-step setting, leave one side at 1 to avoid multiplying the jump.",
+                color: .secondary,
+                symbol: "info.circle"
             )
 
             SettingsCard(title: "TEST SHIFTING") {
@@ -256,6 +382,7 @@ private struct ControlsSettingsPage: View {
 
 private struct PermissionsSettingsPage: View {
     @ObservedObject var controller: ClickController
+    @ObservedObject var settings: AppSettings
 
     var body: some View {
         VStack(spacing: 18) {
@@ -314,6 +441,8 @@ private struct PermissionsSettingsPage: View {
 }
 
 private struct AboutSettingsPage: View {
+    @ObservedObject var controller: ClickController
+    @ObservedObject var settings: AppSettings
     let versionLabel: String
 
     var body: some View {
@@ -348,6 +477,9 @@ private struct AboutSettingsPage: View {
 
             HStack {
                 Link("View source on GitHub", destination: URL(string: "https://github.com/prioneto/ClickShift")!)
+                Button("Export Diagnostics…") {
+                    DiagnosticsExporter.export(controller: controller, settings: settings)
+                }
                 Spacer()
                 Text("Unofficial · Not affiliated with Zwift or MyWhoosh")
                     .font(.caption)
@@ -426,25 +558,38 @@ private struct SettingsRow<Trailing: View>: View {
     }
 }
 
-private struct MappingSettingsRow: View {
-    let button: String
+private struct ConfigurableMappingRow: View {
     let action: String
-    let output: String
     let symbol: String
+    @Binding var button: ClickButton
+    @Binding var key: String
 
     var body: some View {
         HStack(spacing: 12) {
-            Text(button)
-                .font(.system(.body, design: .rounded, weight: .bold))
-                .frame(width: 34, height: 34)
-                .background(.quaternary, in: RoundedRectangle(cornerRadius: 9, style: .continuous))
-
             Label(action, systemImage: symbol)
                 .font(.subheadline.weight(.medium))
             Spacer()
-            Text("Sends \(output)")
+
+            Picker("Button", selection: $button) {
+                ForEach(ClickButton.allCases, id: \.self) { candidate in
+                    Text(candidate.displayName).tag(candidate)
+                }
+            }
+            .labelsHidden()
+            .frame(width: 92)
+
+            Image(systemName: "arrow.right")
                 .font(.caption)
-                .foregroundStyle(.secondary)
+                .foregroundStyle(.tertiary)
+
+            TextField("Key", text: $key)
+                .textFieldStyle(.roundedBorder)
+                .multilineTextAlignment(.center)
+                .frame(width: 82)
+                .onChange(of: key) { value in
+                    let normalized = value.uppercased()
+                    if normalized != value { key = normalized }
+                }
         }
         .padding(14)
     }
@@ -502,5 +647,23 @@ private struct SettingsAppIcon: View {
             }
         }
         .frame(width: size, height: size)
+    }
+}
+
+private enum DiagnosticsExporter {
+    @MainActor
+    static func export(controller: ClickController, settings: AppSettings) {
+        let panel = NSSavePanel()
+        panel.title = "Export ClickShift Diagnostics"
+        panel.nameFieldStringValue = "ClickShift-Diagnostics.txt"
+        panel.allowedContentTypes = [.plainText]
+        guard panel.runModal() == .OK, let url = panel.url else { return }
+
+        do {
+            try controller.diagnosticsReport().write(to: url, atomically: true, encoding: .utf8)
+        } catch {
+            let alert = NSAlert(error: error)
+            alert.runModal()
+        }
     }
 }
