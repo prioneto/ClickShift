@@ -23,6 +23,9 @@ final class SettingsWindowController: NSObject, NSWindowDelegate {
         NSApp.activate(ignoringOtherApps: true)
         window.makeKeyAndOrderFront(nil)
         window.orderFrontRegardless()
+        DispatchQueue.main.async {
+            window.makeFirstResponder(nil)
+        }
     }
 
     private func makeWindow(
@@ -37,16 +40,21 @@ final class SettingsWindowController: NSObject, NSWindowDelegate {
         )
         let hostingController = NSHostingController(rootView: content)
         let window = NSWindow(
-            contentRect: NSRect(x: 0, y: 0, width: 790, height: 560),
-            styleMask: [.titled, .closable, .miniaturizable, .resizable],
+            contentRect: NSRect(x: 0, y: 0, width: 840, height: 600),
+            styleMask: [.titled, .closable, .miniaturizable, .resizable, .fullSizeContentView],
             backing: .buffered,
             defer: false
         )
 
         window.title = "ClickShift Settings"
+        window.titleVisibility = .hidden
+        window.titlebarAppearsTransparent = true
+        window.backgroundColor = .clear
+        window.isOpaque = false
+        window.isMovableByWindowBackground = true
         window.contentViewController = hostingController
         window.isReleasedWhenClosed = false
-        window.minSize = NSSize(width: 760, height: 520)
+        window.minSize = NSSize(width: 800, height: 550)
         window.setFrameAutosaveName("ClickShiftSettingsWindow")
         window.center()
         settingsWindow = window

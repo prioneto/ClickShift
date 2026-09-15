@@ -37,6 +37,15 @@ private enum SettingsDestination: String, CaseIterable, Identifiable {
         case .about: return "Version, privacy, and source"
         }
     }
+
+    var accent: Color {
+        switch self {
+        case .general: return Color(red: 0.35, green: 0.68, blue: 1.0)
+        case .controls: return Color(red: 0.38, green: 0.86, blue: 0.78)
+        case .permissions: return Color(red: 0.67, green: 0.53, blue: 1.0)
+        case .about: return Color(red: 1.0, green: 0.63, blue: 0.39)
+        }
+    }
 }
 
 struct SettingsView: View {
@@ -46,74 +55,180 @@ struct SettingsView: View {
     @State private var selection: SettingsDestination? = .general
 
     var body: some View {
-        NavigationSplitView {
-            VStack(spacing: 0) {
-                List(selection: $selection) {
-                    Section {
-                        ForEach(SettingsDestination.allCases) { destination in
-                            Label(destination.title, systemImage: destination.symbol)
-                                .font(.system(size: 13, weight: .medium))
-                                .padding(.vertical, 2)
-                                .listRowInsets(EdgeInsets(top: 3, leading: 10, bottom: 3, trailing: 10))
-                                .tag(destination)
-                        }
-                    }
-                }
-                .listStyle(.sidebar)
-                .padding(.top, 8)
+        ZStack {
+            SettingsBackdrop()
 
-                Divider()
-                sidebarFooter
-            }
-            .navigationSplitViewColumnWidth(min: 170, ideal: 190, max: 215)
-        } detail: {
-            ScrollView {
-                VStack(alignment: .leading, spacing: 24) {
-                    pageHeader
-                    selectedPage
+            HStack(spacing: 0) {
+                sidebar
+
+                Rectangle()
+                    .fill(Color.white.opacity(0.07))
+                    .frame(width: 1)
+
+                ScrollView {
+                    VStack(alignment: .leading, spacing: 26) {
+                        pageHeader
+                        selectedPage
+                            .buttonStyle(ModernButtonStyle())
+                    }
+                    .padding(.horizontal, 34)
+                    .padding(.top, 46)
+                    .padding(.bottom, 38)
+                    .frame(maxWidth: 710, alignment: .topLeading)
                 }
-                .padding(.horizontal, 30)
-                .padding(.top, 26)
-                .padding(.bottom, 34)
-                .frame(maxWidth: 680, alignment: .topLeading)
+                .scrollIndicators(.hidden)
+                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
             }
-            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
-            .background(Color(nsColor: .windowBackgroundColor))
         }
-        .navigationSplitViewStyle(.balanced)
-        .frame(minWidth: 760, idealWidth: 790, minHeight: 520, idealHeight: 560)
+        .preferredColorScheme(.dark)
+        .frame(minWidth: 800, idealWidth: 840, minHeight: 550, idealHeight: 600)
         .onAppear {
             controller.refreshPermissions()
             loginController.refresh()
         }
     }
 
-    private var sidebarFooter: some View {
-        HStack(spacing: 9) {
-            SettingsAppIcon(size: 28)
-            VStack(alignment: .leading, spacing: 1) {
-                Text("ClickShift")
-                    .font(.caption.weight(.semibold))
+    private var sidebar: some View {
+        VStack(alignment: .leading, spacing: 0) {
+            HStack(spacing: 11) {
+                SettingsAppIcon(size: 38)
+                    .shadow(color: Color.black.opacity(0.35), radius: 8, y: 4)
+
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("ClickShift")
+                        .font(.system(size: 15, weight: .bold, design: .rounded))
+                    Text("CONTROL CENTER")
+                        .font(.system(size: 8, weight: .bold, design: .rounded))
+                        .tracking(1.5)
+                        .foregroundStyle(Color.white.opacity(0.4))
+                }
+            }
+            .padding(.horizontal, 20)
+            .padding(.top, 44)
+            .padding(.bottom, 28)
+
+            VStack(spacing: 8) {
+                ForEach(SettingsDestination.allCases) { destination in
+                    Button {
+                        withAnimation(.easeOut(duration: 0.18)) {
+                            selection = destination
+                        }
+                    } label: {
+                        HStack(spacing: 11) {
+                            Image(systemName: destination.symbol)
+                                .font(.system(size: 13, weight: .semibold))
+                                .frame(width: 30, height: 30)
+                                .background(
+                                    destination.accent.opacity(selection == destination ? 0.2 : 0.09),
+                                    in: RoundedRectangle(cornerRadius: 9, style: .continuous)
+                                )
+
+                            Text(destination.title)
+                                .font(.system(size: 13, weight: .semibold, design: .rounded))
+
+                            Spacer()
+
+                            if selection == destination {
+                                Circle()
+                                    .fill(destination.accent)
+                                    .frame(width: 5, height: 5)
+                                    .shadow(color: destination.accent.opacity(0.8), radius: 5)
+                            }
+                        }
+                        .foregroundStyle(selection == destination ? Color.white : Color.white.opacity(0.62))
+                        .padding(.horizontal, 10)
+                        .padding(.vertical, 7)
+                        .background {
+                            if selection == destination {
+                                RoundedRectangle(cornerRadius: 13, style: .continuous)
+                                    .fill(
+                                        LinearGradient(
+                                            colors: [destination.accent.opacity(0.2), destination.accent.opacity(0.08)],
+                                            startPoint: .leading,
+                                            endPoint: .trailing
+                                        )
+                                    )
+                                    .overlay {
+                                        RoundedRectangle(cornerRadius: 13, style: .continuous)
+                                            .strokeBorder(destination.accent.opacity(0.22), lineWidth: 0.7)
+                                    }
+                            }
+                        }
+                    }
+                    .buttonStyle(.plain)
+                    .focusable(false)
+                }
+            }
+            .padding(.horizontal, 12)
+
+            Spacer()
+
+            VStack(alignment: .leading, spacing: 11) {
+                HStack(spacing: 8) {
+                    Circle()
+                        .fill(connectionColor)
+                        .frame(width: 7, height: 7)
+                        .shadow(color: connectionColor.opacity(0.7), radius: 5)
+                    Text(connectionLabel)
+                        .font(.caption.weight(.medium))
+                        .foregroundStyle(Color.white.opacity(0.72))
+                }
+
                 Text(versionLabel)
                     .font(.caption2)
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(Color.white.opacity(0.32))
             }
-            Spacer()
+            .padding(14)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .background(Color.white.opacity(0.045), in: RoundedRectangle(cornerRadius: 14, style: .continuous))
+            .overlay {
+                RoundedRectangle(cornerRadius: 14, style: .continuous)
+                    .strokeBorder(Color.white.opacity(0.06), lineWidth: 0.7)
+            }
+            .padding(14)
         }
-        .padding(.horizontal, 12)
-        .padding(.top, 13)
-        .padding(.bottom, 15)
+        .frame(width: 210)
+        .background(Color.black.opacity(0.16))
     }
 
     private var pageHeader: some View {
         let destination = selection ?? .general
-        return VStack(alignment: .leading, spacing: 5) {
-            Text(destination.title)
-                .font(.system(size: 26, weight: .bold, design: .rounded))
-            Text(destination.subtitle)
-                .font(.subheadline)
-                .foregroundStyle(.secondary)
+        return HStack(spacing: 15) {
+            Image(systemName: destination.symbol)
+                .font(.system(size: 17, weight: .semibold))
+                .foregroundStyle(destination.accent)
+                .frame(width: 42, height: 42)
+                .background(destination.accent.opacity(0.13), in: RoundedRectangle(cornerRadius: 13, style: .continuous))
+                .overlay {
+                    RoundedRectangle(cornerRadius: 13, style: .continuous)
+                        .strokeBorder(destination.accent.opacity(0.18), lineWidth: 0.7)
+                }
+
+            VStack(alignment: .leading, spacing: 4) {
+                Text(destination.title)
+                    .font(.system(size: 27, weight: .bold, design: .rounded))
+                Text(destination.subtitle)
+                    .font(.subheadline)
+                    .foregroundStyle(Color.white.opacity(0.48))
+            }
+
+            Spacer()
         }
+    }
+
+    private var connectionColor: Color {
+        switch controller.state {
+        case .connected: return .green
+        case .scanning, .connecting, .reconnecting, .foundLeft, .waitingForWake: return .orange
+        case .bluetoothOff, .failed: return .red
+        case .waitingForMyWhoosh, .stopped: return Color.white.opacity(0.35)
+        }
+    }
+
+    private var connectionLabel: String {
+        if controller.state.isConnected { return "Click connected" }
+        if controller.myWhooshRunning { return controller.state.label }
+        return "Waiting for \(settings.targetName)"
     }
 
     @ViewBuilder
@@ -153,16 +268,22 @@ private struct GeneralSettingsPage: View {
                     detail: "Controls detection and keyboard safety",
                     symbol: "square.stack.3d.up"
                 ) {
-                    Picker("", selection: Binding(
-                        get: { settings.profile },
-                        set: { settings.selectProfile($0) }
-                    )) {
+                    Menu {
                         ForEach(AppSettings.Profile.allCases) { profile in
-                            Text(profile.title).tag(profile)
+                            Button {
+                                settings.selectProfile(profile)
+                            } label: {
+                                if settings.profile == profile {
+                                    Label(profile.title, systemImage: "checkmark")
+                                } else {
+                                    Text(profile.title)
+                                }
+                            }
                         }
+                    } label: {
+                        ModernMenuLabel(text: settings.profile.title, width: 146)
                     }
-                    .labelsHidden()
-                    .frame(width: 150)
+                    .menuStyle(.borderlessButton)
                 }
 
                 if settings.profile == .custom {
@@ -173,7 +294,14 @@ private struct GeneralSettingsPage: View {
                         symbol: "app"
                     ) {
                         TextField("App name", text: $settings.customAppName)
-                            .textFieldStyle(.roundedBorder)
+                            .textFieldStyle(.plain)
+                            .padding(.horizontal, 11)
+                            .padding(.vertical, 7)
+                            .background(Color.white.opacity(0.07), in: RoundedRectangle(cornerRadius: 9, style: .continuous))
+                            .overlay {
+                                RoundedRectangle(cornerRadius: 9, style: .continuous)
+                                    .strokeBorder(Color.white.opacity(0.09), lineWidth: 0.7)
+                            }
                             .frame(width: 150)
                     }
                 }
@@ -338,14 +466,7 @@ private struct ControlsSettingsPage: View {
                     detail: "Send the configured key more than once",
                     symbol: "arrow.triangle.2.circlepath"
                 ) {
-                    Picker("", selection: $settings.gearStep) {
-                        Text("1").tag(1)
-                        Text("2").tag(2)
-                        Text("3").tag(3)
-                    }
-                    .pickerStyle(.segmented)
-                    .labelsHidden()
-                    .frame(width: 120)
+                    GearStepPicker(selection: $settings.gearStep)
                 }
             }
 
@@ -389,7 +510,7 @@ private struct PermissionsSettingsPage: View {
             SettingsCard(title: "ACCESSIBILITY") {
                 SettingsRow(
                     title: "Keyboard control",
-                    detail: "Sends only the I and K shortcuts",
+                    detail: "Sends your configured shifting shortcuts",
                     symbol: "keyboard.badge.ellipsis"
                 ) {
                     StatusValue(
@@ -499,20 +620,43 @@ private struct SettingsCard<Content: View>: View {
     }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            Text(title)
-                .font(.caption2.weight(.semibold))
-                .foregroundStyle(.secondary)
-                .padding(.leading, 4)
+        VStack(alignment: .leading, spacing: 10) {
+            HStack(spacing: 7) {
+                Capsule()
+                    .fill(ClickShiftTheme.blue)
+                    .frame(width: 13, height: 4)
+                    .shadow(color: ClickShiftTheme.blue.opacity(0.65), radius: 4)
+
+                Text(title)
+                    .font(.system(size: 10, weight: .bold, design: .rounded))
+                    .tracking(1.1)
+                    .foregroundStyle(Color.white.opacity(0.45))
+            }
+            .padding(.leading, 3)
 
             VStack(spacing: 0) {
                 content
             }
-            .background(Color(nsColor: .controlBackgroundColor), in: RoundedRectangle(cornerRadius: 12, style: .continuous))
+            .background(
+                LinearGradient(
+                    colors: [Color.white.opacity(0.075), Color.white.opacity(0.035)],
+                    startPoint: .topLeading,
+                    endPoint: .bottomTrailing
+                ),
+                in: RoundedRectangle(cornerRadius: 18, style: .continuous)
+            )
             .overlay {
-                RoundedRectangle(cornerRadius: 12, style: .continuous)
-                    .strokeBorder(Color(nsColor: .separatorColor).opacity(0.45), lineWidth: 0.5)
+                RoundedRectangle(cornerRadius: 18, style: .continuous)
+                    .strokeBorder(
+                        LinearGradient(
+                            colors: [Color.white.opacity(0.13), Color.white.opacity(0.035)],
+                            startPoint: .topLeading,
+                            endPoint: .bottomTrailing
+                        ),
+                        lineWidth: 0.8
+                    )
             }
+            .shadow(color: Color.black.opacity(0.16), radius: 18, y: 9)
         }
     }
 }
@@ -539,22 +683,30 @@ private struct SettingsRow<Trailing: View>: View {
         HStack(spacing: 12) {
             Image(systemName: symbol)
                 .font(.system(size: 13, weight: .medium))
-                .foregroundStyle(.secondary)
-                .frame(width: 30, height: 30)
-                .background(.quaternary, in: RoundedRectangle(cornerRadius: 8, style: .continuous))
+                .foregroundStyle(ClickShiftTheme.blue)
+                .frame(width: 32, height: 32)
+                .background(
+                    LinearGradient(
+                        colors: [ClickShiftTheme.blue.opacity(0.17), ClickShiftTheme.teal.opacity(0.08)],
+                        startPoint: .topLeading,
+                        endPoint: .bottomTrailing
+                    ),
+                    in: RoundedRectangle(cornerRadius: 10, style: .continuous)
+                )
 
             VStack(alignment: .leading, spacing: 2) {
                 Text(title)
-                    .font(.subheadline.weight(.medium))
+                    .font(.system(size: 13, weight: .semibold, design: .rounded))
                 Text(detail)
                     .font(.caption)
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(Color.white.opacity(0.43))
             }
 
             Spacer(minLength: 12)
             trailing
         }
-        .padding(14)
+        .padding(.horizontal, 15)
+        .padding(.vertical, 13)
     }
 }
 
@@ -566,32 +718,56 @@ private struct ConfigurableMappingRow: View {
 
     var body: some View {
         HStack(spacing: 12) {
-            Label(action, systemImage: symbol)
-                .font(.subheadline.weight(.medium))
+            Image(systemName: symbol)
+                .font(.system(size: 12, weight: .bold))
+                .foregroundStyle(ClickShiftTheme.teal)
+                .frame(width: 32, height: 32)
+                .background(ClickShiftTheme.teal.opacity(0.12), in: RoundedRectangle(cornerRadius: 10, style: .continuous))
+
+            Text(action)
+                .font(.system(size: 13, weight: .semibold, design: .rounded))
             Spacer()
 
-            Picker("Button", selection: $button) {
+            Menu {
                 ForEach(ClickButton.allCases, id: \.self) { candidate in
-                    Text(candidate.displayName).tag(candidate)
+                    Button {
+                        button = candidate
+                    } label: {
+                        if button == candidate {
+                            Label(candidate.displayName, systemImage: "checkmark")
+                        } else {
+                            Text(candidate.displayName)
+                        }
+                    }
                 }
+            } label: {
+                ModernMenuLabel(text: button.displayName, width: 78)
             }
-            .labelsHidden()
-            .frame(width: 92)
+            .menuStyle(.borderlessButton)
 
             Image(systemName: "arrow.right")
                 .font(.caption)
-                .foregroundStyle(.tertiary)
+                .foregroundStyle(Color.white.opacity(0.24))
 
             TextField("Key", text: $key)
-                .textFieldStyle(.roundedBorder)
+                .textFieldStyle(.plain)
                 .multilineTextAlignment(.center)
-                .frame(width: 82)
+                .font(.system(size: 12, weight: .bold, design: .rounded))
+                .padding(.horizontal, 10)
+                .padding(.vertical, 7)
+                .background(Color.white.opacity(0.07), in: RoundedRectangle(cornerRadius: 9, style: .continuous))
+                .overlay {
+                    RoundedRectangle(cornerRadius: 9, style: .continuous)
+                        .strokeBorder(Color.white.opacity(0.09), lineWidth: 0.7)
+                }
+                .frame(width: 72)
                 .onChange(of: key) { value in
                     let normalized = value.uppercased()
                     if normalized != value { key = normalized }
                 }
         }
-        .padding(14)
+        .padding(.horizontal, 15)
+        .padding(.vertical, 13)
     }
 }
 
@@ -601,11 +777,16 @@ private struct StatusValue: View {
 
     var body: some View {
         Text(text)
-            .font(.caption.weight(.medium))
+            .font(.system(size: 10, weight: .bold, design: .rounded))
+            .textCase(.uppercase)
+            .tracking(0.5)
             .foregroundStyle(color)
-            .padding(.horizontal, 9)
-            .padding(.vertical, 4)
-            .background(color.opacity(0.1), in: Capsule())
+            .padding(.horizontal, 10)
+            .padding(.vertical, 5)
+            .background(color.opacity(0.11), in: Capsule())
+            .overlay {
+                Capsule().strokeBorder(color.opacity(0.16), lineWidth: 0.7)
+            }
     }
 }
 
@@ -619,14 +800,127 @@ private struct InlineNotice: View {
             .font(.caption)
             .foregroundStyle(color)
             .frame(maxWidth: .infinity, alignment: .leading)
-            .padding(.horizontal, 4)
+            .padding(.horizontal, 12)
+            .padding(.vertical, 10)
+            .background(Color.white.opacity(0.03), in: RoundedRectangle(cornerRadius: 11, style: .continuous))
     }
 }
 
 private struct CardDivider: View {
     var body: some View {
-        Divider()
+        Rectangle()
+            .fill(Color.white.opacity(0.07))
+            .frame(height: 1)
             .padding(.leading, 56)
+    }
+}
+
+private struct SettingsBackdrop: View {
+    var body: some View {
+        ZStack {
+            LinearGradient(
+                colors: [
+                    Color(red: 0.045, green: 0.058, blue: 0.085),
+                    Color(red: 0.025, green: 0.032, blue: 0.048),
+                ],
+                startPoint: .topLeading,
+                endPoint: .bottomTrailing
+            )
+
+            Circle()
+                .fill(ClickShiftTheme.blue.opacity(0.12))
+                .frame(width: 430, height: 430)
+                .blur(radius: 105)
+                .offset(x: 280, y: -260)
+
+            Circle()
+                .fill(ClickShiftTheme.teal.opacity(0.07))
+                .frame(width: 360, height: 360)
+                .blur(radius: 110)
+                .offset(x: -310, y: 260)
+        }
+        .ignoresSafeArea()
+    }
+}
+
+private enum ClickShiftTheme {
+    static let blue = Color(red: 0.35, green: 0.68, blue: 1.0)
+    static let teal = Color(red: 0.38, green: 0.86, blue: 0.78)
+}
+
+private struct ModernMenuLabel: View {
+    let text: String
+    let width: CGFloat
+
+    var body: some View {
+        HStack(spacing: 8) {
+            Text(text)
+                .font(.system(size: 12, weight: .semibold, design: .rounded))
+                .lineLimit(1)
+            Spacer(minLength: 4)
+        }
+        .foregroundStyle(Color.white.opacity(0.86))
+        .padding(.horizontal, 10)
+        .padding(.vertical, 7)
+        .frame(width: width)
+        .background(Color.white.opacity(0.07), in: RoundedRectangle(cornerRadius: 9, style: .continuous))
+        .overlay {
+            RoundedRectangle(cornerRadius: 9, style: .continuous)
+                .strokeBorder(Color.white.opacity(0.09), lineWidth: 0.7)
+        }
+    }
+}
+
+private struct GearStepPicker: View {
+    @Binding var selection: Int
+
+    var body: some View {
+        HStack(spacing: 3) {
+            ForEach(1...3, id: \.self) { step in
+                Button {
+                    selection = step
+                } label: {
+                    Text("\(step)")
+                        .font(.system(size: 11, weight: .bold, design: .rounded))
+                        .foregroundStyle(selection == step ? Color.white : Color.white.opacity(0.45))
+                        .frame(width: 31, height: 25)
+                        .background {
+                            if selection == step {
+                                RoundedRectangle(cornerRadius: 7, style: .continuous)
+                                    .fill(ClickShiftTheme.blue.opacity(0.68))
+                                    .shadow(color: ClickShiftTheme.blue.opacity(0.25), radius: 6)
+                            }
+                        }
+                }
+                .buttonStyle(.plain)
+            }
+        }
+        .padding(3)
+        .background(Color.black.opacity(0.24), in: RoundedRectangle(cornerRadius: 10, style: .continuous))
+        .overlay {
+            RoundedRectangle(cornerRadius: 10, style: .continuous)
+                .strokeBorder(Color.white.opacity(0.07), lineWidth: 0.7)
+        }
+    }
+}
+
+private struct ModernButtonStyle: ButtonStyle {
+    func makeBody(configuration: Configuration) -> some View {
+        configuration.label
+            .font(.system(size: 12, weight: .semibold, design: .rounded))
+            .foregroundStyle(Color.white.opacity(configuration.isPressed ? 0.65 : 0.86))
+            .padding(.horizontal, 12)
+            .padding(.vertical, 7)
+            .background(
+                Color.white.opacity(configuration.isPressed ? 0.045 : 0.075),
+                in: RoundedRectangle(cornerRadius: 9, style: .continuous)
+            )
+            .overlay {
+                RoundedRectangle(cornerRadius: 9, style: .continuous)
+                    .strokeBorder(Color.white.opacity(0.08), lineWidth: 0.7)
+            }
+            .scaleEffect(configuration.isPressed ? 0.98 : 1)
+            .animation(.easeOut(duration: 0.12), value: configuration.isPressed)
     }
 }
 

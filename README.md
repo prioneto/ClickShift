@@ -15,7 +15,7 @@ ClickShift is a small, free macOS menu-bar utility that lets a **right-hand Zwif
 - Supports configurable buttons, keys, app profiles, and 1–3 shifts per press
 - Includes a guided first-run setup and privacy-safe diagnostics export
 - Runs quietly as a menu-bar app with a compact native macOS panel
-- Opens controls, permissions, startup options, and app details in a real sidebar-based Settings window
+- Opens controls, permissions, startup options, and app details in a modern layered Settings window
 - No accounts, analytics, advertising, or network service
 
 ClickShift is unofficial and is not affiliated with Zwift or MyWhoosh.

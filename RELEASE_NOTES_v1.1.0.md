@@ -5,7 +5,7 @@ This release gives ClickShift a cleaner, more native macOS interface and makes s
 ## What changed
 
 - Redesigned the menu-bar panel around a compact inline connection status and the two shift mappings.
-- Uses native controls and materials that follow the current macOS appearance.
+- Rebuilt Settings with a custom Alcove-inspired navigation rail, layered glass cards, soft color glows, and compact controls.
 - Moved startup, connection, test, permission, privacy, and version details into a real macOS Settings window.
 - Added a clean sidebar with General, Controls, Permissions, and About pages.
 - Opens Settings through a dedicated application window controller for reliable menu-bar operation.
@@ -36,4 +36,4 @@ This build is ad-hoc signed and not notarized. If macOS blocks the first launch,
 
 ## SHA-256
 
-`d833f0e0b589acbff2060141b5bfb18d4c2349a0b0e4b6dc13e3d4477b52a641`
+`7325e910dc54ef9852b4092c6c5e19e5baad66b5734f15036d2c8c42ff795bcf`
