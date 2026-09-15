@@ -34,7 +34,8 @@ private struct MenuBarPanel: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 14) {
             header
-            statusCard
+            connectionSummary
+            Divider()
             shiftSummary
             footer
         }
@@ -67,46 +68,30 @@ private struct MenuBarPanel: View {
         }
     }
 
-    private var statusCard: some View {
-        VStack(alignment: .leading, spacing: 10) {
-            HStack(spacing: 10) {
-                Image(systemName: statusSymbol)
-                    .font(.system(size: 18, weight: .medium))
-                    .foregroundStyle(statusColor)
-                    .frame(width: 24)
+    private var connectionSummary: some View {
+        HStack(spacing: 10) {
+            Image(systemName: statusSymbol)
+                .font(.system(size: 14, weight: .semibold))
+                .foregroundStyle(statusColor)
+                .frame(width: 30, height: 30)
+                .background(statusColor.opacity(0.12), in: Circle())
 
-                VStack(alignment: .leading, spacing: 2) {
-                    Text(statusTitle)
-                        .font(.system(.body, design: .rounded, weight: .semibold))
-                    Text(controller.state.label)
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-                        .lineLimit(2)
-                }
-
-                Spacer(minLength: 8)
-
-                if controller.myWhooshRunning && !controller.state.isConnected {
-                    ProgressView()
-                        .controlSize(.small)
-                }
+            VStack(alignment: .leading, spacing: 2) {
+                Text(connectionTitle)
+                    .font(.subheadline.weight(.semibold))
+                Text(connectionDetail)
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                    .lineLimit(1)
             }
 
-            HStack(spacing: 6) {
-                StatusPill(
-                    title: "MyWhoosh",
-                    symbol: controller.myWhooshRunning ? "play.fill" : "pause.fill",
-                    isActive: controller.myWhooshRunning
-                )
-                StatusPill(
-                    title: "Click v2",
-                    symbol: controller.state.isConnected ? "dot.radiowaves.left.and.right" : "antenna.radiowaves.left.and.right.slash",
-                    isActive: controller.state.isConnected
-                )
+            Spacer(minLength: 8)
+
+            if controller.myWhooshRunning && !controller.state.isConnected {
+                ProgressView()
+                    .controlSize(.small)
             }
         }
-        .padding(12)
-        .clickShiftStatusSurface()
     }
 
     private var shiftSummary: some View {
@@ -155,10 +140,18 @@ private struct MenuBarPanel: View {
         }
     }
 
-    private var statusTitle: String {
-        if controller.state.isConnected { return "Ready to shift" }
-        if !controller.myWhooshRunning { return "Standing by" }
-        return "Getting ready"
+    private var connectionTitle: String {
+        if controller.state.isConnected { return "Click v2 connected" }
+        if !controller.myWhooshRunning { return "Waiting for MyWhoosh" }
+        if controller.state == .stopped { return "ClickShift paused" }
+        return controller.state.label
+    }
+
+    private var connectionDetail: String {
+        if controller.state.isConnected { return "MyWhoosh is open · Ready to shift" }
+        if !controller.myWhooshRunning { return "Connects automatically when it opens" }
+        if controller.state == .stopped { return "Start it when you’re ready" }
+        return "Wake the right controller if needed"
     }
 
     private var statusSymbol: String {
@@ -218,21 +211,6 @@ private struct AppIconView: View {
     }
 }
 
-private struct StatusPill: View {
-    let title: String
-    let symbol: String
-    let isActive: Bool
-
-    var body: some View {
-        Label(title, systemImage: symbol)
-            .font(.caption2.weight(.medium))
-            .foregroundStyle(isActive ? Color.primary : Color.secondary)
-            .padding(.horizontal, 8)
-            .padding(.vertical, 5)
-            .background(.background.opacity(0.7), in: Capsule())
-    }
-}
-
 private struct ShiftMapping: View {
     let key: String
     let direction: String
@@ -257,16 +235,5 @@ private struct ShiftMapping: View {
             Spacer(minLength: 0)
         }
         .frame(maxWidth: .infinity)
-    }
-}
-
-private extension View {
-    @ViewBuilder
-    func clickShiftStatusSurface() -> some View {
-        if #available(macOS 26.0, *) {
-            glassEffect(.regular, in: RoundedRectangle(cornerRadius: 14, style: .continuous))
-        } else {
-            background(.quaternary, in: RoundedRectangle(cornerRadius: 12, style: .continuous))
-        }
     }
 }

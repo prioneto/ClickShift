@@ -33,7 +33,7 @@ final class SettingsWindowController: NSObject, NSWindowDelegate {
         )
         let hostingController = NSHostingController(rootView: content)
         let window = NSWindow(
-            contentRect: NSRect(x: 0, y: 0, width: 620, height: 500),
+            contentRect: NSRect(x: 0, y: 0, width: 790, height: 560),
             styleMask: [.titled, .closable, .miniaturizable, .resizable],
             backing: .buffered,
             defer: false
@@ -42,7 +42,7 @@ final class SettingsWindowController: NSObject, NSWindowDelegate {
         window.title = "ClickShift Settings"
         window.contentViewController = hostingController
         window.isReleasedWhenClosed = false
-        window.minSize = NSSize(width: 560, height: 440)
+        window.minSize = NSSize(width: 760, height: 520)
         window.setFrameAutosaveName("ClickShiftSettingsWindow")
         window.center()
         settingsWindow = window

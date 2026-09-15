@@ -4,10 +4,10 @@ This release gives ClickShift a cleaner, more native macOS interface while keepi
 
 ## What changed
 
-- Redesigned the menu-bar panel around connection status and the two shift mappings.
-- Added native Liquid Glass styling on macOS 26 and later, with a compatible material fallback for macOS 13–15.
+- Redesigned the menu-bar panel around a compact inline connection status and the two shift mappings.
+- Uses native controls and materials that follow the current macOS appearance.
 - Moved startup, connection, test, permission, privacy, and version details into a real macOS Settings window.
-- Added General, Controls, and Permissions tabs so the main panel stays compact.
+- Added a clean sidebar with General, Controls, Permissions, and About pages.
 - Opens Settings through a dedicated application window controller for reliable menu-bar operation.
 - Updated setup and troubleshooting instructions for the new Settings layout.
 
@@ -30,4 +30,4 @@ This build is ad-hoc signed and not notarized. If macOS blocks the first launch,
 
 ## SHA-256
 
-`35edcac32c7987ebc6ee1c5cfcebc0827f68dde8a8214549b5a03dd1a528da7c`
+`65fc67193b2b1d08fe50559a0cb3460fb47edd6c39f28ed4220701d61cfe2746`

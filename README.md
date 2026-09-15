@@ -12,7 +12,7 @@ ClickShift is a small, free macOS menu-bar utility that lets a **right-hand Zwif
 - Disconnects when MyWhoosh quits so the controller can sleep
 - Reconnects automatically if the controller drops or wakes again
 - Runs quietly as a menu-bar app with a compact native macOS panel
-- Opens controls, permissions, and startup options in a real tabbed Settings window
+- Opens controls, permissions, startup options, and app details in a real sidebar-based Settings window
 - No accounts, analytics, advertising, or network service
 
 ClickShift is unofficial and is not affiliated with Zwift or MyWhoosh.
@@ -32,8 +32,8 @@ The downloadable app is universal and contains native `arm64` and `x86_64` execu
 2. Unzip it and move `ClickShift.app` to `/Applications`.
 3. Open ClickShift once. It appears as a small shift icon in the menu bar.
 4. Approve Bluetooth access when macOS asks.
-5. Open the ClickShift menu, choose **Settings**, then open the **Permissions** tab and select **Enable Accessibility**. Enable ClickShift under **System Settings → Privacy & Security → Accessibility**.
-6. In the **General** tab, keep **Open ClickShift when you log in** enabled. ClickShift must be running quietly in the background to notice MyWhoosh launching.
+5. Open the ClickShift menu, choose **Settings**, then select **Permissions** in the sidebar and choose **Enable Accessibility**. Enable ClickShift under **System Settings → Privacy & Security → Accessibility**.
+6. Under **General**, keep **Launch at login** enabled. ClickShift must be running quietly in the background to notice MyWhoosh launching.
 
 ### macOS security notice
 
@@ -68,11 +68,12 @@ ClickShift registers itself as a macOS login item on first launch. It listens fo
 - **Click disconnected:** ClickShift resumes searching after two seconds.
 - **MyWhoosh quit:** ClickShift disconnects and stops Bluetooth activity.
 
-The menu-bar panel shows connection state and the current button mapping. Choose **Settings** to open a normal macOS application window with three tabs:
+The menu-bar panel shows connection state and the current button mapping. Choose **Settings** to open a normal macOS application window with four sidebar pages:
 
 - **General:** launch-at-login and connection controls
 - **Controls:** button mappings and shift tests
-- **Permissions:** Accessibility, Bluetooth help, privacy, and version information
+- **Permissions:** Accessibility and Bluetooth access
+- **About:** version, privacy, and source information
 
 ## Battery use
 
