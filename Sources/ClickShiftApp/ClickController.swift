@@ -90,7 +90,7 @@ final class ClickController: NSObject, ObservableObject {
         accessibilityGranted = keyboard.isAccessibilityGranted
         startWatchingMyWhoosh()
         settings.$profile
-            .combineLatest(settings.$customAppName, settings.$automaticallyDetectRideApp)
+            .combineLatest(settings.$customAppName)
             .dropFirst()
             .sink { [weak self] _ in self?.refreshMyWhooshState() }
             .store(in: &settingsObservers)
@@ -143,7 +143,6 @@ final class ClickController: NSObject, ObservableObject {
     }
 
     private func refreshMyWhooshState() {
-        settings.updateProfileFromRunningApps()
         let running = NSWorkspace.shared.runningApplications.contains { settings.matchesTarget($0) }
         myWhooshRunning = running
         if !setupMode { setMyWhooshRunning(running) }
@@ -366,7 +365,6 @@ final class ClickController: NSObject, ObservableObject {
         Version: \(version)
         macOS: \(ProcessInfo.processInfo.operatingSystemVersionString)
         Profile: \(settings.profile.title)
-        Automatic app detection: \(settings.automaticallyDetectRideApp ? "On" : "Off")
         State: \(state.label)
         Target running: \(myWhooshRunning)
         Accessibility: \(accessibilityGranted ? "Allowed" : "Required")

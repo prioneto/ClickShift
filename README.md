@@ -8,7 +8,7 @@ ClickShift is a small, free macOS menu-bar utility that lets a **right-hand Zwif
 
 - `+` sends `K` — shift up
 - `B` sends `I` — shift down
-- Detects MyWhoosh, TrainingPeaks Virtual, or ROUVY automatically when one opens
+- Watches the training app profile you choose during setup
 - Disconnects when the ride app quits so the controller can sleep
 - Reconnects automatically if the controller drops or wakes again
 - Sends shift keys only when the selected riding app is focused by default
@@ -31,9 +31,9 @@ The downloadable app is universal and contains native `arm64` and `x86_64` execu
 
 ## Download and install
 
-1. Download `ClickShift-v1.2.0-macOS-universal.zip` from the [latest GitHub release](https://github.com/prioneto/ClickShift/releases/latest).
+1. Download `ClickShift-v1.2.1-macOS-universal.zip` from the [latest GitHub release](https://github.com/prioneto/ClickShift/releases/latest).
 2. Unzip it and move `ClickShift.app` to `/Applications`.
-3. Open ClickShift once. The Setup Assistant detects an open supported ride app and guides you through Bluetooth, Accessibility, and finding the right Click. A manual app choice remains available.
+3. Open ClickShift once. The Setup Assistant asks you to choose a training app, then guides you through Bluetooth, Accessibility, and finding the right Click.
 4. Keep **Launch at login** enabled on the final setup page. ClickShift must be running quietly in the background to notice your riding app launching.
 
 ### macOS security notice
@@ -69,16 +69,16 @@ ClickShift is a controller-to-keyboard bridge, not a trainer bridge:
 1. Your training app connects directly to the trainer and remains responsible for power, cadence, resistance, ERG mode, and the ride.
 2. ClickShift separately connects only to the right-hand Zwift Click v2.
 3. A Click button press becomes the configured keyboard shortcut, such as `K` or `I` in MyWhoosh.
-4. Safety mode sends that shortcut only when the detected training app is focused.
+4. Safety mode sends that shortcut only when your selected training app is focused.
 
-ClickShift never pairs with the trainer, proxies trainer data, or changes trainer resistance itself. Zwift is intentionally excluded because it already supports the Click natively. Recognized apps are detected automatically; any other keyboard-controlled training app can be entered as a **Custom app**.
+ClickShift never pairs with the trainer, proxies trainer data, or changes trainer resistance itself. Zwift is intentionally excluded because it already supports the Click natively. Choose MyWhoosh, TrainingPeaks Virtual, ROUVY, or enter any other keyboard-controlled training app as a **Custom app**.
 
-## Automatic behavior
+## Connection behavior
 
-ClickShift registers itself as a macOS login item on first launch and watches only for supported training apps:
+ClickShift registers itself as a macOS login item on first launch and watches only for the training app you selected:
 
 - **Training app closed:** ClickShift waits without initializing or scanning Bluetooth.
-- **Training app opened:** ClickShift selects a recognized profile and starts searching for the right Click.
+- **Selected training app opened:** ClickShift starts searching for the right Click.
 - **Click disconnected:** ClickShift attempts a remembered-device reconnect after about half a second.
 - **Training app quit:** ClickShift disconnects and stops Bluetooth activity.
 
@@ -91,7 +91,7 @@ The menu-bar panel shows connection state and the current button mapping. Choose
 
 ### App profiles and mappings
 
-ClickShift automatically follows a running MyWhoosh, TrainingPeaks Virtual, or ROUVY app. You can turn detection off under **Settings → General** and choose one of those profiles or any custom application name manually. A profile chooses which running and focused application ClickShift considers safe; keyboard shortcuts differ between apps, so verify and set the two keys under **Settings → Controls**. Selecting MyWhoosh manually restores its documented `K`-up and `I`-down defaults.
+Choose MyWhoosh, TrainingPeaks Virtual, ROUVY, or a custom application name during setup or under **Settings → General**. The selected profile determines which running and focused application ClickShift considers safe; keyboard shortcuts differ between apps, so verify and set the two keys under **Settings → Controls**. Selecting MyWhoosh restores its documented `K`-up and `I`-down defaults.
 
 Zwift is intentionally not a target: it supports the Zwift Click natively, so an extra keyboard bridge is unnecessary.
 
