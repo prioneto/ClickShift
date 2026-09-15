@@ -29,4 +29,4 @@ This build is ad-hoc signed and not notarized. If macOS blocks the first launch,
 
 ## SHA-256
 
-`964c663bd618422c2f20268a567f43f5d28ec3e1426044c7ec0eb96ba0de7194`
+`aed1b8e89a06a1775fbe516f52f748a5244285933f41988b33766267b10177c4`

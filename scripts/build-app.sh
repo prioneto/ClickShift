@@ -14,11 +14,14 @@ APP_VERSION=1.1.0
 BUILD_NUMBER=2
 
 cd "${PROJECT_DIR}"
+rm -rf "${PROJECT_DIR}/.build/arm64" "${PROJECT_DIR}/.build/x86_64"
 swift build -c release --arch arm64 --scratch-path .build/arm64
 swift build -c release --arch x86_64 --scratch-path .build/x86_64
+ARM64_BIN_DIR=$(swift build -c release --arch arm64 --scratch-path .build/arm64 --show-bin-path)
+X86_64_BIN_DIR=$(swift build -c release --arch x86_64 --scratch-path .build/x86_64 --show-bin-path)
 lipo -create \
-  ".build/arm64/arm64-apple-macosx/release/ClickShift" \
-  ".build/x86_64/x86_64-apple-macosx/release/ClickShift" \
+  "${ARM64_BIN_DIR}/ClickShift" \
+  "${X86_64_BIN_DIR}/ClickShift" \
   -output ".build/ClickShift-universal"
 
 rm -rf "${APP_DIR}" "${ICONSET_DIR}"
