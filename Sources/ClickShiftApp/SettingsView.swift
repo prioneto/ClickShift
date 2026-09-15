@@ -254,10 +254,33 @@ private struct GeneralSettingsPage: View {
 
     var body: some View {
         VStack(spacing: 18) {
+            SettingsCard(title: "HOW IT WORKS") {
+                SettingsInfoRow(
+                    title: "Training app controls your trainer",
+                    detail: "Pair power, cadence, and resistance directly inside the training app",
+                    symbol: "figure.indoor.cycle",
+                    color: ClickShiftTheme.teal
+                )
+                CardDivider()
+                SettingsInfoRow(
+                    title: "ClickShift connects only to the right Click",
+                    detail: "It never pairs with, proxies, or changes resistance on your trainer",
+                    symbol: "dot.radiowaves.left.and.right",
+                    color: ClickShiftTheme.blue
+                )
+                CardDivider()
+                SettingsInfoRow(
+                    title: "Click buttons become keyboard shortcuts",
+                    detail: "Safety mode sends them only while the selected training app is focused",
+                    symbol: "keyboard",
+                    color: Color(red: 0.67, green: 0.53, blue: 1.0)
+                )
+            }
+
             SettingsCard(title: "APP PROFILE") {
                 SettingsToggleRow(
-                    title: "Detect the running ride app",
-                    detail: "Automatically follows a supported app when it opens",
+                    title: "Detect the running training app",
+                    detail: "Automatically follows MyWhoosh, TrainingPeaks Virtual, or ROUVY",
                     symbol: "sparkle.magnifyingglass",
                     isOn: $settings.automaticallyDetectRideApp
                 )
@@ -311,7 +334,7 @@ private struct GeneralSettingsPage: View {
             SettingsCard(title: "SYSTEM") {
                 SettingsToggleRow(
                     title: "Launch at login",
-                    detail: "Stay ready to detect MyWhoosh",
+                    detail: "Stay ready to detect your training app",
                     symbol: "power",
                     isOn: Binding(
                         get: { loginController.isEnabled },
@@ -400,7 +423,7 @@ private struct GeneralSettingsPage: View {
             }
 
             InlineNotice(
-                text: "Bluetooth scanning starts only while \(settings.targetName) is open and stops as soon as it closes.",
+                text: "ClickShift scans only for the right Click while \(settings.targetName) is open. Your trainer remains connected directly to the training app.",
                 color: .secondary,
                 symbol: "leaf"
             )
@@ -530,7 +553,7 @@ private struct PermissionsSettingsPage: View {
             SettingsCard(title: "BLUETOOTH") {
                 SettingsRow(
                     title: "Zwift Click access",
-                    detail: "Used only while MyWhoosh is open",
+                    detail: "Connects only to the right Click; never to your trainer",
                     symbol: "wave.3.right"
                 ) {
                     Button("Open Settings") {
@@ -568,7 +591,7 @@ private struct AboutSettingsPage: View {
                             .font(.title3.weight(.semibold))
                         Text(versionLabel)
                             .foregroundStyle(.secondary)
-                        Text("Virtual shifting for MyWhoosh with the right Zwift Click v2.")
+                        Text("Click-to-keyboard shifting for training apps without native Click support.")
                             .font(.caption)
                             .foregroundStyle(.secondary)
                     }
@@ -594,7 +617,7 @@ private struct AboutSettingsPage: View {
                     DiagnosticsExporter.export(controller: controller, settings: settings)
                 }
                 Spacer()
-                Text("Unofficial · Not affiliated with Zwift or MyWhoosh")
+                Text("Unofficial · Zwift uses the Click natively")
                     .font(.caption)
                     .foregroundStyle(.tertiary)
             }
@@ -673,6 +696,35 @@ private struct SettingsRow<Trailing: View>: View {
 
             Spacer(minLength: 12)
             trailing
+        }
+        .padding(.horizontal, 15)
+        .padding(.vertical, 13)
+    }
+}
+
+private struct SettingsInfoRow: View {
+    let title: String
+    let detail: String
+    let symbol: String
+    let color: Color
+
+    var body: some View {
+        HStack(spacing: 12) {
+            Image(systemName: symbol)
+                .font(.system(size: 13, weight: .medium))
+                .foregroundStyle(color)
+                .frame(width: 32, height: 32)
+                .background(color.opacity(0.12), in: RoundedRectangle(cornerRadius: 10, style: .continuous))
+
+            VStack(alignment: .leading, spacing: 2) {
+                Text(title)
+                    .font(.system(size: 13, weight: .semibold, design: .rounded))
+                Text(detail)
+                    .font(.caption)
+                    .foregroundStyle(Color.white.opacity(0.43))
+            }
+
+            Spacer(minLength: 0)
         }
         .padding(.horizontal, 15)
         .padding(.vertical, 13)

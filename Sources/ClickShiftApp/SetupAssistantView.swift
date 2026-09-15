@@ -124,24 +124,38 @@ struct SetupAssistantView: View {
     private var welcomeStep: some View {
         SetupStage(
             eyebrow: "WELCOME",
-            title: "Open your ride app",
-            detail: "ClickShift detects supported ride apps automatically. Safety mode keeps every shift inside the detected app.",
+            title: "Your app keeps control",
+            detail: "Connect your trainer directly to your training app as usual. ClickShift connects only to the right Click and turns its buttons into keyboard shortcuts.",
             symbol: "arrow.up.arrow.down.circle.fill",
             color: SetupTheme.blue
         ) {
-            SetupPanel(title: "AUTOMATIC DETECTION") {
+            SetupPanel(title: "HOW CLICKSHIFT WORKS") {
+                SetupHowItWorksRow(
+                    symbol: "figure.indoor.cycle",
+                    title: "Training app controls the trainer",
+                    detail: "Power and resistance stay connected there.",
+                    color: SetupTheme.teal
+                )
+                SetupDivider()
+                SetupHowItWorksRow(
+                    symbol: "dot.radiowaves.left.and.right",
+                    title: "ClickShift connects only to the Click",
+                    detail: "It never pairs with or controls your trainer.",
+                    color: SetupTheme.blue
+                )
+                SetupDivider()
+                SetupHowItWorksRow(
+                    symbol: "keyboard",
+                    title: "Buttons become shortcuts",
+                    detail: "They are sent only to the focused training app.",
+                    color: SetupTheme.purple
+                )
+
                 SetupStatusLine(
                     text: controller.myWhooshRunning ? "Found \(settings.targetName)" : "Waiting for a supported ride app",
                     symbol: controller.myWhooshRunning ? "checkmark.circle.fill" : "sparkle.magnifyingglass",
                     color: controller.myWhooshRunning ? .green : SetupTheme.blue
                 )
-
-                Text(controller.myWhooshRunning
-                     ? "You’re ready to continue. ClickShift will use this app automatically."
-                     : "Open a recognized training app and it will appear here. For any other app, choose Custom app below.")
-                    .font(.system(size: 11, weight: .medium, design: .rounded))
-                    .foregroundStyle(Color.white.opacity(0.46))
-                    .fixedSize(horizontal: false, vertical: true)
 
                 Menu {
                     ForEach(AppSettings.Profile.allCases) { profile in
@@ -204,7 +218,7 @@ struct SetupAssistantView: View {
             SetupPanel(title: "ACCESS") {
                 SetupPermissionRow(
                     title: "Bluetooth",
-                    detail: "Find the right Click v2",
+                    detail: "Find the right Click v2 — not your trainer",
                     symbol: "wave.3.right",
                     allowed: controller.bluetoothAuthorizationGranted,
                     color: SetupTheme.blue
@@ -239,8 +253,8 @@ struct SetupAssistantView: View {
             eyebrow: "CONTROLLER",
             title: connected ? "Your Click is ready" : "Wake the right Click",
             detail: connected
-                ? "The controller is connected and ready for shifting."
-                : "Press + or B once, then keep the controller close to your Mac while ClickShift searches.",
+                ? "The Click is connected. Your trainer remains connected directly to the training app."
+                : "Press + or B once while ClickShift searches. Leave your trainer connected directly to the training app.",
             symbol: connected ? "checkmark.circle.fill" : "dot.radiowaves.left.and.right",
             color: connected ? .green : SetupTheme.orange
         ) {
@@ -288,12 +302,14 @@ struct SetupAssistantView: View {
         SetupStage(
             eyebrow: "READY",
             title: "You’re all set",
-            detail: "ClickShift will stay quiet, connect when your riding app opens, and protect every shift.",
+            detail: "ClickShift will detect your training app, connect only to the Click, and protect every shortcut. Your trainer stays with the training app.",
             symbol: "checkmark.circle.fill",
             color: .green
         ) {
             SetupPanel(title: "YOUR SETUP") {
                 SetupSummaryRow(symbol: "app.fill", text: settings.targetName, color: SetupTheme.blue)
+                SetupDivider()
+                SetupSummaryRow(symbol: "figure.indoor.cycle", text: "Trainer stays connected to the training app", color: SetupTheme.teal)
                 SetupDivider()
                 SetupSummaryRow(symbol: "lock.shield.fill", text: "App-only safety is on", color: SetupTheme.teal)
                 SetupDivider()
@@ -414,6 +430,33 @@ private struct SetupPanel<Content: View>: View {
         .overlay {
             RoundedRectangle(cornerRadius: 17, style: .continuous)
                 .strokeBorder(Color.white.opacity(0.065), lineWidth: 0.7)
+        }
+    }
+}
+
+private struct SetupHowItWorksRow: View {
+    let symbol: String
+    let title: String
+    let detail: String
+    let color: Color
+
+    var body: some View {
+        HStack(spacing: 10) {
+            Image(systemName: symbol)
+                .font(.system(size: 11, weight: .semibold))
+                .foregroundStyle(color)
+                .frame(width: 29, height: 29)
+                .background(color.opacity(0.12), in: RoundedRectangle(cornerRadius: 9, style: .continuous))
+
+            VStack(alignment: .leading, spacing: 1) {
+                Text(title)
+                    .font(.system(size: 11, weight: .semibold, design: .rounded))
+                Text(detail)
+                    .font(.system(size: 9.5, weight: .medium, design: .rounded))
+                    .foregroundStyle(Color.white.opacity(0.4))
+            }
+
+            Spacer(minLength: 0)
         }
     }
 }

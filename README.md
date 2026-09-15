@@ -25,13 +25,13 @@ ClickShift is unofficial and is not affiliated with Zwift or MyWhoosh.
 - macOS 13 Ventura or later
 - Apple Silicon or Intel Mac
 - Zwift Click v2 right controller
-- MyWhoosh for macOS with Virtual Shifting enabled
+- A macOS training app that accepts keyboard shortcuts for shifting; enable the app’s virtual-shifting feature when required
 
 The downloadable app is universal and contains native `arm64` and `x86_64` executables.
 
 ## Download and install
 
-1. Download `ClickShift-v1.1.0-macOS-universal.zip` from the [latest GitHub release](https://github.com/prioneto/ClickShift/releases/latest).
+1. Download `ClickShift-v1.2.0-macOS-universal.zip` from the [latest GitHub release](https://github.com/prioneto/ClickShift/releases/latest).
 2. Unzip it and move `ClickShift.app` to `/Applications`.
 3. Open ClickShift once. The Setup Assistant detects an open supported ride app and guides you through Bluetooth, Accessibility, and finding the right Click. A manual app choice remains available.
 4. Keep **Launch at login** enabled on the final setup page. ClickShift must be running quietly in the background to notice your riding app launching.
@@ -52,8 +52,8 @@ Only bypass this warning for a build you obtained from this repository. You can 
 ## Using ClickShift
 
 1. Quit Zwift, Zwift Companion, BikeControl, and other apps that might connect to the Click.
-2. Open MyWhoosh.
-3. Enable Virtual Shifting in MyWhoosh.
+2. Open your training app and connect the trainer directly inside that app as usual.
+3. Enable virtual shifting in the training app if it requires it. In MyWhoosh, enable **Virtual Shifting**.
 4. Press a button on the **right-hand** Click to wake it.
 5. Wait for ClickShift's status to change to **Connected**.
 6. Use `+` to shift up and `B` to shift down.
@@ -62,14 +62,25 @@ Safety mode is enabled by default: ClickShift sends keys only while the selected
 
 ClickShift identifies the right controller from its Zwift manufacturer data. It deliberately ignores the left controller, avoiding the left side's periodic unlock/restart behavior while still providing both shift directions.
 
+## How it works
+
+ClickShift is a controller-to-keyboard bridge, not a trainer bridge:
+
+1. Your training app connects directly to the trainer and remains responsible for power, cadence, resistance, ERG mode, and the ride.
+2. ClickShift separately connects only to the right-hand Zwift Click v2.
+3. A Click button press becomes the configured keyboard shortcut, such as `K` or `I` in MyWhoosh.
+4. Safety mode sends that shortcut only when the detected training app is focused.
+
+ClickShift never pairs with the trainer, proxies trainer data, or changes trainer resistance itself. Zwift is intentionally excluded because it already supports the Click natively. Recognized apps are detected automatically; any other keyboard-controlled training app can be entered as a **Custom app**.
+
 ## Automatic behavior
 
-ClickShift registers itself as a macOS login item on first launch. The MyWhoosh profile detects the installed app (`com.whoosh.whooshgame`):
+ClickShift registers itself as a macOS login item on first launch and watches only for supported training apps:
 
-- **MyWhoosh closed:** ClickShift waits without initializing or scanning Bluetooth.
-- **MyWhoosh opened:** ClickShift starts searching for the right Click.
+- **Training app closed:** ClickShift waits without initializing or scanning Bluetooth.
+- **Training app opened:** ClickShift selects a recognized profile and starts searching for the right Click.
 - **Click disconnected:** ClickShift attempts a remembered-device reconnect after about half a second.
-- **MyWhoosh quit:** ClickShift disconnects and stops Bluetooth activity.
+- **Training app quit:** ClickShift disconnects and stops Bluetooth activity.
 
 The menu-bar panel shows connection state and the current button mapping. Choose **Settings** to open a normal macOS application window with four sidebar pages:
 
@@ -101,15 +112,15 @@ The right Click’s `+`, `B`, directional, `A`, `Y`, `Z`, and minus buttons can 
 
 Battery impact on the Mac should be negligible:
 
-- While MyWhoosh is closed, ClickShift only receives macOS app launch/quit notifications.
-- While MyWhoosh is open, Bluetooth scanning runs only until the right Click connects.
+- While the training app is closed, ClickShift only receives macOS app launch/quit notifications.
+- While the training app is open, Bluetooth scanning runs only until the right Click connects.
 - Once connected, ClickShift sends one three-byte keepalive every five seconds and otherwise waits for button notifications.
 
-The keepalive keeps the Click awake during a MyWhoosh session, which necessarily uses more of the Click's coin-cell battery than leaving it asleep. ClickShift disconnects as soon as MyWhoosh quits.
+The keepalive keeps the Click awake during a training session, which necessarily uses more of the Click's coin-cell battery than leaving it asleep. ClickShift disconnects as soon as the training app quits.
 
 ## Privacy
 
-ClickShift operates locally and does not contain telemetry, analytics, advertising, user accounts, or network communication. It does not read MyWhoosh account or ride data.
+ClickShift operates locally and does not contain telemetry, analytics, advertising, user accounts, or network communication. It does not read training-app accounts or ride data.
 
 The app stores only small local preferences, such as mappings, profile choice, the remembered CoreBluetooth identifier for the right controller, and launch-at-login state. macOS manages Bluetooth, Accessibility, notification, and login-item permissions.
 
