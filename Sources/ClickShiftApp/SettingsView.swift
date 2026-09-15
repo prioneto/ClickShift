@@ -143,9 +143,10 @@ struct SettingsView: View {
                                     .overlay {
                                         RoundedRectangle(cornerRadius: 13, style: .continuous)
                                             .strokeBorder(destination.accent.opacity(0.22), lineWidth: 0.7)
-                                    }
+                                }
                             }
                         }
+                        .contentShape(RoundedRectangle(cornerRadius: 13, style: .continuous))
                     }
                     .buttonStyle(.plain)
                     .focusable(false)
@@ -299,48 +300,39 @@ private struct GeneralSettingsPage: View {
             }
 
             SettingsCard(title: "SYSTEM") {
-                SettingsRow(
+                SettingsToggleRow(
                     title: "Launch at login",
                     detail: "Stay ready to detect MyWhoosh",
-                    symbol: "power"
-                ) {
-                    Toggle(
-                        "",
-                        isOn: Binding(
-                            get: { loginController.isEnabled },
-                            set: { loginController.setEnabled($0) }
-                        )
+                    symbol: "power",
+                    isOn: Binding(
+                        get: { loginController.isEnabled },
+                        set: { loginController.setEnabled($0) }
                     )
-                    .labelsHidden()
-                }
+                )
 
                 CardDivider()
 
-                SettingsRow(
+                SettingsToggleRow(
                     title: "Only send keys to \(settings.targetName)",
                     detail: "Blocks shifts whenever another app is focused",
-                    symbol: "lock.shield"
-                ) {
-                    Toggle("", isOn: $settings.onlySendToTarget)
-                        .labelsHidden()
-                }
+                    symbol: "lock.shield",
+                    isOn: $settings.onlySendToTarget
+                )
 
                 CardDivider()
 
-                SettingsRow(
+                SettingsToggleRow(
                     title: "Meaningful notifications",
                     detail: "Connection, disconnection, and permission alerts",
-                    symbol: "bell"
-                ) {
-                    Toggle("", isOn: Binding(
+                    symbol: "bell",
+                    isOn: Binding(
                         get: { settings.notificationsEnabled },
                         set: { enabled in
                             settings.notificationsEnabled = enabled
                             if enabled { NotificationManager.shared.requestAuthorization() }
                         }
-                    ))
-                    .labelsHidden()
-                }
+                    )
+                )
             }
 
             if let error = loginController.errorMessage {
@@ -678,6 +670,64 @@ private struct SettingsRow<Trailing: View>: View {
     }
 }
 
+private struct SettingsToggleRow: View {
+    let title: String
+    let detail: String
+    let symbol: String
+    @Binding var isOn: Bool
+    @State private var isHovered = false
+
+    var body: some View {
+        Button {
+            isOn.toggle()
+        } label: {
+            HStack(spacing: 12) {
+                Image(systemName: symbol)
+                    .font(.system(size: 13, weight: .medium))
+                    .foregroundStyle(ClickShiftTheme.blue)
+                    .frame(width: 32, height: 32)
+                    .background(ClickShiftTheme.blue.opacity(0.12), in: RoundedRectangle(cornerRadius: 10, style: .continuous))
+
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(title)
+                        .font(.system(size: 13, weight: .semibold, design: .rounded))
+                    Text(detail)
+                        .font(.caption)
+                        .foregroundStyle(Color.white.opacity(0.43))
+                }
+
+                Spacer(minLength: 12)
+
+                ZStack {
+                    RoundedRectangle(cornerRadius: 7, style: .continuous)
+                        .fill(isOn ? ClickShiftTheme.blue.opacity(0.82) : Color.white.opacity(0.055))
+                    RoundedRectangle(cornerRadius: 7, style: .continuous)
+                        .strokeBorder(isOn ? ClickShiftTheme.blue : Color.white.opacity(0.16), lineWidth: 1)
+
+                    if isOn {
+                        Image(systemName: "checkmark")
+                            .font(.system(size: 10, weight: .black))
+                            .foregroundStyle(Color.white)
+                            .transition(.scale.combined(with: .opacity))
+                    }
+                }
+                .frame(width: 24, height: 24)
+            }
+            .foregroundStyle(Color.white)
+            .padding(.horizontal, 15)
+            .padding(.vertical, 13)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .background(Color.white.opacity(isHovered ? 0.025 : 0))
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+        .onHover { isHovered = $0 }
+        .animation(.easeOut(duration: 0.14), value: isHovered)
+        .animation(.easeOut(duration: 0.16), value: isOn)
+        .accessibilityValue(isOn ? "On" : "Off")
+    }
+}
+
 private struct ConfigurableMappingRow: View {
     let action: String
     let symbol: String
@@ -831,6 +881,7 @@ private struct GearStepPicker: View {
                         .font(.system(size: 11, weight: .bold, design: .rounded))
                         .foregroundStyle(selection == step ? Color.white : Color.white.opacity(0.45))
                         .frame(width: 31, height: 25)
+                        .contentShape(RoundedRectangle(cornerRadius: 7, style: .continuous))
                         .background {
                             if selection == step {
                                 RoundedRectangle(cornerRadius: 7, style: .continuous)

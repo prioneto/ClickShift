@@ -193,7 +193,7 @@ private struct MenuBarPanel: View {
                 }
                 .keyboardShortcut("q")
             }
-            .controlSize(.small)
+            .buttonStyle(MenuPanelButtonStyle())
         }
     }
 
@@ -229,6 +229,28 @@ private struct MenuBarPanel: View {
         case .waitingForMyWhoosh, .stopped: return .secondary
         default: return .orange
         }
+    }
+}
+
+private struct MenuPanelButtonStyle: ButtonStyle {
+    @Environment(\.isEnabled) private var isEnabled
+
+    func makeBody(configuration: Configuration) -> some View {
+        configuration.label
+            .font(.system(size: 12, weight: .semibold, design: .rounded))
+            .foregroundStyle(Color.primary.opacity(isEnabled ? (configuration.isPressed ? 0.65 : 0.9) : 0.34))
+            .padding(.horizontal, 12)
+            .padding(.vertical, 8)
+            .background(
+                Color.primary.opacity(configuration.isPressed ? 0.055 : 0.085),
+                in: RoundedRectangle(cornerRadius: 9, style: .continuous)
+            )
+            .overlay {
+                RoundedRectangle(cornerRadius: 9, style: .continuous)
+                    .strokeBorder(Color.primary.opacity(0.09), lineWidth: 0.7)
+            }
+            .contentShape(RoundedRectangle(cornerRadius: 9, style: .continuous))
+            .opacity(isEnabled ? 1 : 0.7)
     }
 }
 
