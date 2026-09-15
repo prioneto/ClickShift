@@ -24,13 +24,6 @@ struct ClickShiftApp: App {
             }
         }
         .menuBarExtraStyle(.window)
-
-        Settings {
-            SettingsView(
-                controller: controller,
-                loginController: loginController
-            )
-        }
     }
 }
 
@@ -148,7 +141,10 @@ private struct MenuBarPanel: View {
 
                 Spacer()
 
-                OpenSettingsButton()
+                OpenSettingsButton(
+                    controller: controller,
+                    loginController: loginController
+                )
 
                 Button("Quit") {
                     NSApplication.shared.terminate(nil)
@@ -185,18 +181,19 @@ private struct MenuBarPanel: View {
 }
 
 private struct OpenSettingsButton: View {
+    @ObservedObject var controller: ClickController
+    @ObservedObject var loginController: LaunchAtLoginController
+
     var body: some View {
-        if #available(macOS 14.0, *) {
-            SettingsLink {
-                Label("Settings", systemImage: "gearshape")
+        Button {
+            DispatchQueue.main.async {
+                SettingsWindowController.shared.show(
+                    controller: controller,
+                    loginController: loginController
+                )
             }
-        } else {
-            Button {
-                NSApp.activate(ignoringOtherApps: true)
-                NSApp.sendAction(Selector(("showPreferencesWindow:")), to: nil, from: nil)
-            } label: {
-                Label("Settings", systemImage: "gearshape")
-            }
+        } label: {
+            Label("Settings", systemImage: "gearshape")
         }
     }
 }
