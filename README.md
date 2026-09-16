@@ -10,7 +10,7 @@ ClickShift is a small, free macOS menu-bar utility that lets a **right-hand Zwif
 - `B` sends `I` — shift down
 - Watches the training app profile you choose during setup
 - Disconnects when the ride app quits so the controller can sleep
-- Reconnects automatically if the controller drops or wakes again
+- Reconnects automatically if the controller drops or the Mac wakes from sleep
 - Sends shift keys only when the selected riding app is focused by default
 - Supports configurable buttons, keys, app profiles, and 1–3 shifts per press
 - Includes a guided first-run setup and privacy-safe diagnostics export
@@ -31,7 +31,7 @@ The downloadable app is universal and contains native `arm64` and `x86_64` execu
 
 ## Download and install
 
-1. Download `ClickShift-v1.2.1-macOS-universal.zip` from the [latest GitHub release](https://github.com/prioneto/ClickShift/releases/latest).
+1. Download `ClickShift-v1.2.2-macOS-universal.zip` from the [latest GitHub release](https://github.com/prioneto/ClickShift/releases/latest).
 2. Unzip it and move `ClickShift.app` to `/Applications`.
 3. Open ClickShift once. The Setup Assistant asks you to choose a training app, then guides you through Bluetooth, Accessibility, and finding the right Click.
 4. Keep **Launch at login** enabled on the final setup page. ClickShift must be running quietly in the background to notice your riding app launching.
@@ -80,6 +80,7 @@ ClickShift registers itself as a macOS login item on first launch and watches on
 - **Training app closed:** ClickShift waits without initializing or scanning Bluetooth.
 - **Selected training app opened:** ClickShift starts searching for the right Click.
 - **Click disconnected:** ClickShift attempts a remembered-device reconnect after about half a second.
+- **Mac wakes from sleep:** ClickShift refreshes the riding-app and permission state, restarts Bluetooth, and reconnects automatically.
 - **Training app quit:** ClickShift disconnects and stops Bluetooth activity.
 
 The menu-bar panel shows connection state and the current button mapping. Choose **Settings** to open a normal macOS application window with four sidebar pages:
