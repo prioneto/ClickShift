@@ -73,6 +73,7 @@ final class ClickController: NSObject, ObservableObject {
     private var writeCharacteristic: CBCharacteristic?
     private var keepaliveTimer: Timer?
     private var reconnectWorkItem: DispatchWorkItem?
+    private var wakeRecoveryWorkItem: DispatchWorkItem?
     private var settingsObservers = Set<AnyCancellable>()
     private var pressedButtons = Set<ClickButton>()
     private var handshakeStarted = false
@@ -83,6 +84,7 @@ final class ClickController: NSObject, ObservableObject {
     private var diagnosticEvents: [String] = []
     private var lastUnknownCandidate: UUID?
     private var workspaceObservers = [NSObjectProtocol]()
+    private var isSystemSleeping = false
 
     init(settings: AppSettings) {
         self.settings = settings
@@ -97,6 +99,7 @@ final class ClickController: NSObject, ObservableObject {
     }
 
     deinit {
+        wakeRecoveryWorkItem?.cancel()
         for observer in workspaceObservers {
             NSWorkspace.shared.notificationCenter.removeObserver(observer)
         }
@@ -104,6 +107,10 @@ final class ClickController: NSObject, ObservableObject {
 
     func start() {
         shouldRun = true
+        guard !isSystemSleeping else {
+            state = .reconnecting
+            return
+        }
         beginScanningIfPossible()
     }
 
@@ -111,6 +118,10 @@ final class ClickController: NSObject, ObservableObject {
         setupMode = true
         shouldRun = true
         attemptedRememberedConnection = false
+        guard !isSystemSleeping else {
+            state = .reconnecting
+            return
+        }
         beginScanningIfPossible()
     }
 
@@ -139,13 +150,93 @@ final class ClickController: NSObject, ObservableObject {
             }
             workspaceObservers.append(observer)
         }
+        let sleepObserver = center.addObserver(
+            forName: NSWorkspace.willSleepNotification,
+            object: nil,
+            queue: .main
+        ) { [weak self] _ in
+            self?.prepareForSystemSleep()
+        }
+        workspaceObservers.append(sleepObserver)
+
+        let wakeObserver = center.addObserver(
+            forName: NSWorkspace.didWakeNotification,
+            object: nil,
+            queue: .main
+        ) { [weak self] _ in
+            self?.recoverFromSystemWake()
+        }
+        workspaceObservers.append(wakeObserver)
         refreshMyWhooshState()
     }
 
     private func refreshMyWhooshState() {
         let running = NSWorkspace.shared.runningApplications.contains { settings.matchesTarget($0) }
         myWhooshRunning = running
-        if !setupMode { setMyWhooshRunning(running) }
+        if !setupMode {
+            if isSystemSleeping {
+                shouldRun = running
+                state = running ? .reconnecting : .waitingForMyWhoosh
+            } else {
+                setMyWhooshRunning(running)
+            }
+        }
+    }
+
+    private func prepareForSystemSleep() {
+        isSystemSleeping = true
+        wakeRecoveryWorkItem?.cancel()
+        wakeRecoveryWorkItem = nil
+        reconnectWorkItem?.cancel()
+        reconnectWorkItem = nil
+        keepaliveTimer?.invalidate()
+        keepaliveTimer = nil
+        central.stopScan()
+        recordEvent("Mac is going to sleep")
+    }
+
+    private func recoverFromSystemWake() {
+        isSystemSleeping = false
+        refreshPermissions()
+
+        let targetRunning = NSWorkspace.shared.runningApplications.contains { settings.matchesTarget($0) }
+        myWhooshRunning = targetRunning
+        guard setupMode || targetRunning else {
+            stop(waitingForMyWhoosh: true)
+            recordEvent("Mac woke; waiting for riding app")
+            return
+        }
+
+        shouldRun = true
+        reconnectWorkItem?.cancel()
+        reconnectWorkItem = nil
+        central.stopScan()
+        if let peripheral {
+            central.cancelPeripheralConnection(peripheral)
+        }
+        clearConnection()
+        attemptedRememberedConnection = false
+        state = .reconnecting
+        recordEvent("Mac woke; restarting Bluetooth connection")
+        scheduleWakeRecoveryAttempt()
+    }
+
+    private func scheduleWakeRecoveryAttempt(_ attempt: Int = 0) {
+        wakeRecoveryWorkItem?.cancel()
+        let item = DispatchWorkItem { [weak self] in
+            guard let self, !self.isSystemSleeping, self.shouldRun else { return }
+            if self.central.state == .poweredOn {
+                self.wakeRecoveryWorkItem = nil
+                self.beginScanningIfPossible()
+            } else if attempt < 5 {
+                self.scheduleWakeRecoveryAttempt(attempt + 1)
+            } else {
+                self.wakeRecoveryWorkItem = nil
+                self.state = .bluetoothOff
+            }
+        }
+        wakeRecoveryWorkItem = item
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.8, execute: item)
     }
 
     private func stop(waitingForMyWhoosh: Bool) {
@@ -338,7 +429,7 @@ final class ClickController: NSObject, ObservableObject {
     }
 
     private func scheduleReconnect() {
-        guard shouldRun else { return }
+        guard shouldRun, !isSystemSleeping else { return }
         state = .reconnecting
         reconnectWorkItem?.cancel()
         let item = DispatchWorkItem { [weak self] in
@@ -409,9 +500,15 @@ extension ClickController: CBCentralManagerDelegate {
     func centralManagerDidUpdateState(_ central: CBCentralManager) {
         switch central.state {
         case .poweredOn:
+            wakeRecoveryWorkItem?.cancel()
+            wakeRecoveryWorkItem = nil
             beginScanningIfPossible()
-        case .poweredOff, .unauthorized, .unsupported:
+        case .poweredOff:
+            state = wakeRecoveryWorkItem == nil ? .bluetoothOff : .reconnecting
+        case .unauthorized, .unsupported:
             state = .bluetoothOff
+        case .resetting, .unknown:
+            if shouldRun { state = .reconnecting }
         default:
             break
         }
@@ -456,6 +553,7 @@ extension ClickController: CBCentralManagerDelegate {
     }
 
     func centralManager(_ central: CBCentralManager, didFailToConnect peripheral: CBPeripheral, error: Error?) {
+        guard self.peripheral?.identifier == peripheral.identifier else { return }
         clearConnection()
         attemptedRememberedConnection = false
         state = .failed("Could not connect: \(error?.localizedDescription ?? "unknown error")")
@@ -467,6 +565,7 @@ extension ClickController: CBCentralManagerDelegate {
         didDisconnectPeripheral peripheral: CBPeripheral,
         error: Error?
     ) {
+        guard self.peripheral?.identifier == peripheral.identifier else { return }
         clearConnection()
         attemptedRememberedConnection = false
         scheduleReconnect()
