@@ -15,7 +15,7 @@
       <img src="/assets/clickshift-icon.png" alt="" width="44" height="44">
       <span>ClickShift</span>
     </a>
-    <a class="version-chip" href="/changelog/" aria-label="View ClickShift changelog">v1.2.2</a>
+    <a class="version-chip" href="/changelog/" aria-label="View ClickShift changelog">v1.3.0</a>
     <nav aria-label="Primary navigation">
       <a href="/faqs/"><span class="nav-icon">●</span> FAQs</a>
       <a href="/changelog/"><span class="nav-icon">▦</span> Changelog</a>
@@ -29,7 +29,7 @@
         <h1 id="hero-title">Your Click.<br>Now for every<br><span class="marker">ride app.</span></h1>
         <p class="hero-summary">Simple, private virtual shifting for macOS. Your trainer stays with your training app. ClickShift connects only to your right Click.</p>
         <div class="hero-actions">
-          <a class="button button-dark" href="https://github.com/prioneto/ClickShift/releases/download/v1.2.2/ClickShift-v1.2.2-macOS-universal.zip"><span>⌘</span> Download for Mac</a>
+          <a class="button button-dark" href="https://github.com/prioneto/ClickShift/releases/download/v1.3.0/ClickShift-v1.3.0-macOS-universal.zip"><span>⌘</span> Download for Mac</a>
           <a class="button button-soft" href="https://github.com/prioneto/ClickShift">View source <span class="button-tag">Free</span></a>
         </div>
       </div>
@@ -50,20 +50,30 @@
 
         <div class="clickshift-panel" id="clickshiftPanel">
           <div class="panel-head">
-            <img src="/assets/clickshift-icon.png" alt="" width="38" height="38">
-            <div><b>ClickShift</b><span>Virtual shifting for your ride app</span></div>
-            <i class="panel-dot"></i>
+            <img src="/assets/clickshift-icon.png" alt="" width="20" height="20">
+            <b>ClickShift</b>
+            <span class="panel-badge"><i class="panel-dot"></i><span id="panelBadge">Waiting</span></span>
           </div>
-          <div class="connection-row">
-            <span class="connection-symbol">○</span>
-            <div><b id="connectionTitle">Waiting for your ride app</b><span id="connectionDetail">Opens when your selected app starts</span></div>
+          <div class="panel-separator"></div>
+          <div class="panel-label">Status</div>
+          <div class="device-row">
+            <span class="device-glyph" id="clickGlyph"><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" fill-rule="evenodd" d="M7.2 6.5h9.6a5.2 5.2 0 0 1 5.1 6.2l-.8 3.9a2.7 2.7 0 0 1-4.7 1.2l-2.1-2.7H9.7l-2.1 2.7a2.7 2.7 0 0 1-4.7-1.2l-.8-3.9a5.2 5.2 0 0 1 5.1-6.2ZM6.3 9.6v1.6H4.7v1.4h1.6v1.6h1.4v-1.6h1.6v-1.4H7.7V9.6H6.3Zm9.9.1a1 1 0 1 0 0 2 1 1 0 0 0 0-2Zm2.1 2.1a1 1 0 1 0 0 2 1 1 0 0 0 0-2Z"/></svg></span>
+            <div><b>Zwift Click v2</b><span id="clickStatus">Waiting for MyWhoosh</span></div>
           </div>
-          <div class="shift-row">
-            <button class="shift-control" data-shift="up"><kbd>+</kbd><span><b>Up</b><small>Sends K</small></span></button>
-            <span class="shift-divider"></span>
-            <button class="shift-control" data-shift="down"><kbd>B</kbd><span><b>Down</b><small>Sends I</small></span></button>
+          <div class="device-row">
+            <span class="device-glyph" id="appGlyph"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="5.8" cy="16.2" r="3.6"/><circle cx="18.2" cy="16.2" r="3.6"/><path d="m5.8 16.2 3.7-6.9h6.1l2.6 6.9M9.5 9.3l3.4 6.9h-1.8M14.2 6.2h2.2"/></svg></span>
+            <div><b>MyWhoosh</b><span id="appStatus">Not running</span></div>
           </div>
-          <div class="panel-footer"><button type="button">Reconnect</button><span></span><button type="button">Settings</button><button type="button">Quit</button></div>
+          <p class="panel-hint" id="panelHint">Connects automatically when your ride app opens.</p>
+          <div class="panel-separator"></div>
+          <div class="panel-label">Shifting</div>
+          <button class="shift-control" type="button" data-shift="up"><span class="shift-arrow">↑</span><b>Shift up</b><span class="shift-caps"><kbd class="round">+</kbd><i>→</i><kbd>K</kbd></span></button>
+          <button class="shift-control" type="button" data-shift="down"><span class="shift-arrow">↓</span><b>Shift down</b><span class="shift-caps"><kbd class="round">B</kbd><i>→</i><kbd>I</kbd></span></button>
+          <div class="panel-separator"></div>
+          <button class="panel-item" type="button"><span>↻</span>Reconnect</button>
+          <button class="panel-item" type="button"><span>⚙</span>Settings…<kbd>⌘,</kbd></button>
+          <div class="panel-separator"></div>
+          <button class="panel-item" type="button"><span>⏻</span>Quit ClickShift<kbd>⌘Q</kbd></button>
         </div>
       </div>
       <div class="demo-hint">↖ Psst… it’s interactive!</div>
@@ -82,7 +92,7 @@
         <button class="feature" data-demo-state="private"><span class="feature-icon">⌑</span><b>Private by<br>design</b><small>No accounts or analytics</small></button>
         <button class="feature" data-demo-state="native"><span class="feature-icon">ϟ</span><b>Blazing fast<br>native app</b><small>Swift, universal, and quiet</small></button>
       </div>
-      <a class="button button-dark center-download" href="https://github.com/prioneto/ClickShift/releases/download/v1.2.2/ClickShift-v1.2.2-macOS-universal.zip"><span>⌘</span> Download for Mac</a>
+      <a class="button button-dark center-download" href="https://github.com/prioneto/ClickShift/releases/download/v1.3.0/ClickShift-v1.3.0-macOS-universal.zip"><span>⌘</span> Download for Mac</a>
     </section>
 
     <section class="wordmark-section shell" aria-label="ClickShift">

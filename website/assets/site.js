@@ -2,34 +2,47 @@
   const demo = document.querySelector('#demo');
   const panel = document.querySelector('#clickshiftPanel');
   const menuToggle = document.querySelector('#menuToggle');
-  const connectionTitle = document.querySelector('#connectionTitle');
-  const connectionDetail = document.querySelector('#connectionDetail');
+  const panelBadge = document.querySelector('#panelBadge');
+  const clickStatus = document.querySelector('#clickStatus');
+  const appStatus = document.querySelector('#appStatus');
+  const panelHint = document.querySelector('#panelHint');
+  const clickGlyph = document.querySelector('#clickGlyph');
+  const appGlyph = document.querySelector('#appGlyph');
   const gearNumber = document.querySelector('#gearNumber');
   const gearReadout = document.querySelector('.gear-readout');
 
-  const stateCopy = {
-    idle: ['Waiting for your ride app', 'Opens when your selected app starts'],
-    connected: ['Click v2 connected', 'Your ride app is open · Ready to shift'],
-    safe: ['App-only safety is on', 'Shortcuts stay inside your selected training app'],
-    searching: ['Searching for right Click v2…', 'Press + or B once to wake the controller'],
-    mapping: ['Custom controls ready', '+ sends K · B sends I'],
-    step: ['Three-step shift selected', 'One press can move 1, 2, or 3 virtual gears'],
-    profile: ['MyWhoosh selected', 'ROUVY, TrainingPeaks Virtual, or any custom app'],
-    private: ['Everything stays local', 'No account, analytics, ride data, or network service'],
-    native: ['Native macOS app', 'Universal for Apple Silicon and Intel']
+  const connected = { tone: 'ready', badge: 'Connected', click: 'Connected', app: 'Open' };
+  const states = {
+    idle: { tone: 'idle', badge: 'Waiting', click: 'Waiting for MyWhoosh', app: 'Not running', hint: 'Connects automatically when your ride app opens.' },
+    connected: { ...connected, hint: 'Ready to shift. Press + or B, or click a shift row.' },
+    safe: { ...connected, hint: 'App-only safety is on: shortcuts go only to your training app.' },
+    searching: { tone: 'working', badge: 'Searching', click: 'Searching…', app: 'Open', hint: 'Press a button on the right Click to wake it.' },
+    mapping: { ...connected, hint: 'Choose any Click button and keyboard key in Settings.' },
+    step: { ...connected, hint: 'One press can move 1, 2, or 3 virtual gears.' },
+    profile: { ...connected, hint: 'MyWhoosh, ROUVY, TrainingPeaks Virtual, or any custom app.' },
+    private: { ...connected, hint: 'Everything stays on your Mac. No account, analytics, or network.' },
+    native: { ...connected, hint: 'Native Swift app, universal for Apple Silicon and Intel.' }
   };
 
   function setState(state) {
     if (!demo) return;
+    const copy = states[state] || states.idle;
     demo.dataset.state = state;
-    const copy = stateCopy[state] || stateCopy.idle;
-    if (connectionTitle) connectionTitle.textContent = copy[0];
-    if (connectionDetail) connectionDetail.textContent = copy[1];
+    demo.dataset.tone = copy.tone;
+    if (panelBadge) panelBadge.textContent = copy.badge;
+    if (clickStatus) clickStatus.textContent = copy.click;
+    if (appStatus) appStatus.textContent = copy.app;
+    if (panelHint) panelHint.textContent = copy.hint;
+    clickGlyph?.classList.toggle('is-on', copy.tone === 'ready');
+    clickGlyph?.classList.toggle('is-working', copy.tone === 'working');
+    appGlyph?.classList.toggle('is-on', copy.app === 'Open');
     if (panel?.classList.contains('is-hidden')) {
       panel.classList.remove('is-hidden');
       menuToggle?.setAttribute('aria-expanded', 'true');
     }
   }
+
+  setState(demo?.dataset.state || 'idle');
 
   menuToggle?.addEventListener('click', () => {
     panel?.classList.toggle('is-hidden');

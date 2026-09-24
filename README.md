@@ -31,7 +31,7 @@ The downloadable app is universal and contains native `arm64` and `x86_64` execu
 
 ## Download and install
 
-1. Download `ClickShift-v1.2.2-macOS-universal.zip` from the [latest GitHub release](https://github.com/prioneto/ClickShift/releases/latest).
+1. Download `ClickShift-v1.3.0-macOS-universal.zip` from the [latest GitHub release](https://github.com/prioneto/ClickShift/releases/latest).
 2. Unzip it and move `ClickShift.app` to `/Applications`.
 3. Open ClickShift once. The Setup Assistant asks you to choose a training app, then guides you through Bluetooth, Accessibility, and finding the right Click.
 4. Keep **Launch at login** enabled on the final setup page. ClickShift must be running quietly in the background to notice your riding app launching.
