@@ -39,23 +39,30 @@ final class SettingsWindowController: NSObject, NSWindowDelegate {
             loginController: loginController
         )
         let hostingController = NSHostingController(rootView: content)
+        if #available(macOS 14.0, *) {
+            hostingController.sceneBridgingOptions = []
+        }
         let window = NSWindow(
-            contentRect: NSRect(x: 0, y: 0, width: 840, height: 600),
+            contentRect: NSRect(x: 0, y: 0, width: 740, height: 540),
             styleMask: [.titled, .closable, .miniaturizable, .resizable, .fullSizeContentView],
             backing: .buffered,
             defer: false
         )
 
+        // An empty unified toolbar gives the taller title bar, so the traffic
+        // lights line up with the page title drawn by SettingsView.
+        window.toolbar = NSToolbar(identifier: "ClickShiftSettingsToolbar")
+        window.toolbarStyle = .unified
+        window.titlebarSeparatorStyle = .none
         window.title = "ClickShift Settings"
         window.titleVisibility = .hidden
         window.titlebarAppearsTransparent = true
-        window.backgroundColor = .clear
-        window.isOpaque = false
         window.isMovableByWindowBackground = true
         window.contentViewController = hostingController
+        window.setContentSize(NSSize(width: 740, height: 540))
         window.isReleasedWhenClosed = false
-        window.minSize = NSSize(width: 800, height: 550)
-        window.setFrameAutosaveName("ClickShiftSettingsWindow")
+        window.minSize = NSSize(width: 680, height: 460)
+        window.setFrameAutosaveName("ClickShiftSettings")
         window.center()
         settingsWindow = window
         return window

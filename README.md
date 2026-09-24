@@ -14,8 +14,8 @@ ClickShift is a small, free macOS menu-bar utility that lets a **right-hand Zwif
 - Sends shift keys only when the selected riding app is focused by default
 - Supports configurable buttons, keys, app profiles, and 1–3 shifts per press
 - Includes a guided first-run setup and privacy-safe diagnostics export
-- Runs quietly as a menu-bar app with a compact native macOS panel
-- Opens controls, permissions, startup options, and app details in a modern layered Settings window
+- Runs quietly in the menu bar with a native dropdown for status, mappings, and quick actions
+- Includes a native Settings window with General, Controls, Permissions, and About pages that follows your light or dark appearance
 - No accounts, analytics, advertising, or network service
 
 ClickShift is unofficial and is not affiliated with Zwift or MyWhoosh.
@@ -83,7 +83,7 @@ ClickShift registers itself as a macOS login item on first launch and watches on
 - **Mac wakes from sleep:** ClickShift refreshes the riding-app and permission state, restarts Bluetooth, and reconnects automatically.
 - **Training app quit:** ClickShift disconnects and stops Bluetooth activity.
 
-The menu-bar panel shows connection state and the current button mapping. Choose **Settings** to open a normal macOS application window with four sidebar pages:
+Click the menu-bar icon to open the ClickShift dropdown. It shows the Click and training-app status, your button mapping, the last shift, and **Reconnect**, **Settings…**, and **Quit ClickShift**. Choose **Settings…** (⌘,) to open a macOS window with four sidebar pages:
 
 - **General:** app profile, safety mode, notifications, launch-at-login, and connection controls
 - **Controls:** Click button mappings, custom keys, gear step, and shift tests
@@ -144,13 +144,13 @@ Wake the right controller. ClickShift intentionally ignores the left side.
 
 - Enable Virtual Shifting in MyWhoosh.
 - Confirm ClickShift is enabled under **Privacy & Security → Accessibility**.
-- Keep MyWhoosh active and use **Test Shift Down** and **Test Shift Up** in **Settings → Controls**.
+- Keep MyWhoosh active and use the **Down** and **Up** test buttons in **Settings → Controls**.
 - Confirm the keys under **Settings → Controls** match the riding app’s shortcuts.
 - If the menu says a press was blocked, bring the selected riding app to the front or review safety mode under **Settings → General**.
 
 ### It does not start with MyWhoosh
 
-ClickShift itself must already be running. Enable **Open ClickShift when you log in** under **Settings → General**, then check **System Settings → General → Login Items & Extensions** if macOS has disabled it.
+ClickShift itself must already be running. Enable **Open at login** under **Settings → General**, then check **System Settings → General → Login Items & Extensions** if macOS has disabled it.
 
 ### A Click firmware update breaks input
 
@@ -175,7 +175,7 @@ The build script produces `dist/ClickShift.app`, containing both Apple Silicon a
 
 ## Uninstall
 
-1. Turn off **Open ClickShift when you log in** under **ClickShift Settings → General**.
+1. Turn off **Open at login** under **ClickShift Settings → General**.
 2. Choose **Quit ClickShift**.
 3. Move `/Applications/ClickShift.app` to the Trash.
 4. Optionally remove ClickShift from the Bluetooth and Accessibility lists in System Settings.
